@@ -20,7 +20,7 @@ int secondPass(commandLinePtr secondPassCommandsHead) {
                 break;
 
             default:
-
+                success = handleSecondPassActionCommands(curr);
                 break;
         }
         if(success == FAIL) {
@@ -32,6 +32,72 @@ int secondPass(commandLinePtr secondPassCommandsHead) {
     if(isErrorsFlag) {
         return FAIL;
     }
+    return SUCCESS;
+}
+
+
+int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
+    tokenPtr  commandToken = actionCommandLine->tokenListHead;
+    tokenPtr curr = commandToken;
+    int sourceOperandAddressingModeCode = 0;
+    int destinyOperandAddressingModeCode = 0;
+    int success = SUCCESS;
+
+    IC++; /*for the memory word that discribe the command*/
+    if(actionCommandLine->hasLabel) {
+        commandToken = commandToken->next;
+    }
+    if(actionCommandLine->commandType <= TWO_OPERANDS) {
+        curr = curr->next;
+        switch (actionCommandLine->sourceOperandAddressingMode) {
+            case IMMEDIATE_ADDRESSING:
+                success = handleImmediateAddressing(curr);
+                break;
+
+            case DIRECT_ADDRESSING:
+                success = handleDirectAddressing(curr);
+                break;
+
+        }
+    }
+    return success;
+}
+
+
+int handleDirectAddressing(tokenPtr operator) {
+    return SUCCESS;
+}
+
+
+/**
+ * handleImmediateAddressing
+ *
+ * This function handle operators that in immediate addressing method
+ * The function will convert the number after the '#' to a real number
+ * The function will check if the number is valid and then store the number in the action memory base
+ * while using the two's complement method
+ *
+ * params:
+ * operator - a pointer to the token of the operator
+ *
+ * return:
+ * int - if the function failed or succeeded
+ *
+ * */
+int handleImmediateAddressing(tokenPtr operator) {
+    char *numberString = operator->string++;
+    int realNumber;
+    realNumber = atoi(numberString);
+    /*if the number is to big or to small*/
+    if(realNumber > MAX_VALID_IMMEDIATE_ADDRESSING_NUMBER || realNumber < MIN_VALID_IMMEDIATE_ADDRESSING_NUMBER) {
+        fprintf(stderr, "ERROR: immediate addressing operators can only be between: %d to %d\n", MAX_VALID_IMMEDIATE_ADDRESSING_NUMBER, MIN_VALID_IMMEDIATE_ADDRESSING_NUMBER);
+        return FAIL;
+    }
+    if(realNumber < 0) { /*two's complement system*/
+        realNumber += pow(2,NUM_OF_BITS_IN_MEMORY_WORD-2); /*-2 because of the E R A bits*/
+    }
+    actionMemoryBase[IC-MEMORY_START_POS] = realNumber;
+    IC++;
     return SUCCESS;
 }
 
