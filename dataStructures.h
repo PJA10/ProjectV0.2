@@ -54,7 +54,8 @@ typedef struct CommandLine{
     commandLinePtr next;
 }commandLine;
 
-void addCommandLine(commandLinePtr *head, int lineNumber, int commandType,  int hasLabel, int sourceOperandAddressingMode, int destinyOperandAddressingMode, tokenPtr tokenListHead);
+void addCommandLine(commandLinePtr *head, commandLinePtr new);
+commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode, int destinyOperandAddressingMode, tokenPtr tokenListHead);
 
 
 void addToken(tokenPtr *, char *);
