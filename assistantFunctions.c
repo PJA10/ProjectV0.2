@@ -556,5 +556,38 @@ void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddres
         codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4 | destinyOperandAddressingMode << 2;
     }
     actionMemoryBase[IC - MEMORY_START_POS] = codedActionCommand;
+    printInBinary(codedActionCommand);
     IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
 }
+
+
+void printInBinary(int num) {
+    int mask;
+    for(mask = 512; mask!= 0; mask = mask>>1) {
+        if(num&mask) {
+            fprintf(stderr , "%d", 1);
+        }
+        else{
+            fprintf(stderr, "%d",0);
+        }
+    }
+    fprintf(stderr, "\n");
+}
+
+
+void printActionMemoryBase() {
+    int i,j;
+    for(i = 0; 1; i++){
+        printInBinary(actionMemoryBase[i]);
+        if(actionMemoryBase[i] == 0){
+            j++;
+        }
+        else{
+            j=0;
+        }
+        if(j == 5){
+            break;
+        }
+
+    }
+};

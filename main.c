@@ -73,6 +73,7 @@ int main(int args, char* argv[]) {
         }
         freeGlobal();
     }
+    printActionMemoryBase();
     return EXIT_SUCCESS;
 }
 
