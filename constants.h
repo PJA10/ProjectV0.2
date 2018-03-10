@@ -39,6 +39,8 @@
 #define EXTERNAL_CODE_METHOD_MASK 1 /*01*/
 #define FIRST_COMMAND_ID 5
 
+enum {ACTION_LABEL, STRUCT_LABEL, EXTERN_LABEL, DATA_LABEL};
+
 enum {DATA, STRING, STRUCT, EXTERN, ENTRY, /*data commands*/
     MOV, CMP, ADD, SUB, LEA, NOT, CLR, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP, /*action commands*/
     UNKNOWN}; /*others*/
