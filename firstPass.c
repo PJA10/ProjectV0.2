@@ -362,7 +362,7 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
         int isValid;
         tokenPtr firstOperandToken = commandToken->next; /*after the command suppose to be the first operand*/
         tokenPtr commaToken =  firstOperandToken->next; /*between the two operand suppose to be a comma*/
-        tokenPtr secondOperandToken = commandToken->next; /*after the comma suppose to be the second operand*/
+        tokenPtr secondOperandToken = commaToken->next; /*after the comma suppose to be the second operand*/
 
         if(firstOperandToken == NULL) { /*checks if the first operand is NULL*/
             fprintf(stderr, "ERROR: the Command %s requires two operands\n", commands[commandType].name);
@@ -413,7 +413,7 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
             return FAIL;
         }
         destinyOperandAddressingMode = checkAddressingMode(firstOperandToken);
-        isValid = checkIfValidAddressingMode(destinyOperandAddressingMode ,commands[commandType].sourceOperandValidAddressingModes);
+        isValid = checkIfValidAddressingMode(destinyOperandAddressingMode ,commands[commandType].destinyOperandValidAddressingModes);
         if(isValid == FAIL){ /*checks if the adressing mode of the only operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the operand\n", commands[commandType].name, addressingModes[destinyOperandAddressingMode]);
             return FAIL;
