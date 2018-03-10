@@ -484,6 +484,25 @@ void storeString(char *string) {
 }
 
 
+/**
+ * addNumberToActionMemoryBase
+ *
+ * The function add a given number to the action memory base
+ * The function will add the absolute code method bits to the memory to
+ * The function will correct negatives numbers to the Two's complement system with 10 bits
+ *
+ * params:
+ * number - the number that we want to add to the memory*/
+void addNumberToActionMemoryBase(int number) {
+    int operandMemoryWord;
+    if(number < 0) { /*two's complement system*/
+        number += pow(2, NUM_OF_BITS_IN_MEMORY_WORD-2); /*-2 because of the E R A bits*/
+    }
+    operandMemoryWord = (number << NUM_OF_CODE_METHOD_BITS) | ABSOLUTE_CODE_METHOD_MASK;
+    actionMemoryBase[IC-MEMORY_START_POS] = operandMemoryWord;
+    IC++;
+}
+
 
 /**
  * addNumberToDataMemoryBase
@@ -497,14 +516,14 @@ void storeString(char *string) {
  * */
 void addNumberToDataMemoryBase(int newNumber) {
     dataMemoryBase[DC] = newNumber;
-    DC++;
     if(newNumber < 0) {
         dataMemoryBase[DC] += pow(2, NUM_OF_BITS_IN_MEMORY_WORD);
     }
+    DC++;
 }
 
 
-/* *
+/**
  * numberOfLinesToSkip
  *
  * The function checks how many lines we need to skip, based of the operands addressing modes
@@ -534,7 +553,7 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
     return sum + 1;
 }
 
-/* *
+/**
  * codeActionCommand
  *
  * The function codes into actionMemoryBase the command and saves the other lines that we need to code for the second pass
@@ -557,4 +576,30 @@ void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddres
     }
     actionMemoryBase[IC - MEMORY_START_POS] = codedActionCommand;
     IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
+}
+
+
+/**
+ * addAddressToActionMemoryBase
+ *
+ * The function add a new word to the action memory base with the address of a given lable
+ * The function handle extern to
+ *
+ * paramsL
+ * label - the label the we want to add the address of
+ *
+ * */
+void addAddressToActionMemoryBase(labelPtr label) {
+    int operandMemoryWord;
+    int codeMethodBits;
+    operandMemoryWord = label->address << NUM_OF_CODE_METHOD_BITS;
+    if(label->type == EXTERN_LABEL) { /*if the label is an external label*/
+        codeMethodBits = EXTERNAL_CODE_METHOD_MASK; /*then the code method is external*/
+    }
+    else {
+        codeMethodBits = RELOCATABLE_CODE_METHOD_MASK; /*then the code method is relocatable*/
+    }
+    operandMemoryWord |= codeMethodBits; /*the memory bits is the connection of the address and the code method*/
+    actionMemoryBase[IC-MEMORY_START_POS] = operandMemoryWord;
+    IC++;
 }

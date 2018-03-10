@@ -31,6 +31,8 @@ labelPtr checkLabelName(char *name);
 void addNumberToDataMemoryBase(int newNumber);
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode);
 void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType);
+void addNumberToActionMemoryBase(int number);
+void addAddressToActionMemoryBase(labelPtr label);
 
 
 

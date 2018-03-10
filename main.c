@@ -86,7 +86,7 @@ int main(int args, char* argv[]) {
 void updateDataLabelsAddress() {
     labelPtr curr = labelTabale;
     while(curr) {
-        if(curr->isAction == FALSE && curr->hasEntry == FALSE) {
+        if(curr->type != ACTION_LABEL && curr->type != EXTERN_LABEL) {
             curr->address += IC;
         }
         curr = curr->next;
