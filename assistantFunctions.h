@@ -29,6 +29,9 @@ void storeString(char *string);
 int checkIfValidLabelName(char *labelName);
 labelPtr checkLabelName(char *name);
 void addNumberToDataMemoryBase(int newNumber);
+int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode);
+void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType);
+
 
 
 

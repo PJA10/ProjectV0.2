@@ -502,3 +502,59 @@ void addNumberToDataMemoryBase(int newNumber) {
         dataMemoryBase[DC] += pow(2, NUM_OF_BITS_IN_MEMORY_WORD);
     }
 }
+
+
+/* *
+ * numberOfLinesToSkip
+ *
+ * The function checks how many lines we need to skip, based of the operands addressing modes
+ *
+ * params:
+ * sourceAddressingMode - the id of the source operand's addressing mode, -1 for no operand
+ * destinyAddressingMode - the id of the destiny operand's addressing mode, -1 for no operand
+ *
+ * */
+int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
+    int sum = 0;
+    if(sourceAddressingMode == STRUCT_ACCESS_ADRESSING){ /*if the operand is a struct we need to save two lines*/
+        sum += 2;
+    }
+    else if(destinyAddressingMode != -NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
+        sum += 1;
+    }
+    if(destinyAddressingMode == STRUCT_ACCESS_ADRESSING){/*if the operand is a struct we need to save two lines*/
+        sum += 2;
+    }
+    else if(destinyAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
+        sum += 1;
+    }
+    if(destinyAddressingMode == REGISTERS_ADDRESSING && sourceAddressingMode == REGISTERS_ADDRESSING){ /* if both of the operands are register, we need to save only one line*/
+        sum = 1;
+    }
+    return sum + 1;
+}
+
+/* *
+ * codeActionCommand
+ *
+ * The function codes into actionMemoryBase the command and saves the other lines that we need to code for the second pass
+ *
+ * params:
+ * sourceAddressingMode - the id of the source operand's addressing mode, -1 for no operand
+ * destinyAddressingMode - the id of the destiny operand's addressing mode, -1 for no operand
+ *
+ * */
+void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType) {
+    int codedActionCommand;
+    if(destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode != NO_OPERAND) {
+        codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4;
+    }
+    else if (sourceOperandAddressingMode == NO_OPERAND){
+        codedActionCommand = commandType << 6;
+    }
+    else{
+        codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4 | destinyOperandAddressingMode << 2;
+    }
+    actionMemoryBase[IC - MEMORY_START_POS] = codedActionCommand;
+    IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
+}
