@@ -72,14 +72,58 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
                 success = handleDirectAddressing(curr);
                 break;
 
+            case STRUCT_ACCESS_ADRESSING:
+                success = handleStructAddressing(curr);
+                break;
         }
     }
     return success;
 }
 
 
+int handleStructAddressing(tokenPtr operand) {
+
+}
+
+
+/**
+ * handleDirectAddressing
+ *
+ * This function handle operands then in direct addressing method
+ * The function will find the label with name of the operand string
+ * And add to the memory a word with the address and code method
+ * If there isn't a label with that name the function will return FAIL
+ *
+ * parameters:
+ * operand - a pointer to the token of the operand
+ *
+ * return:
+ * int - if the function failed or succeeded
+ *
+ * */
 int handleDirectAddressing(tokenPtr operand) {
+    int operandMemoryWord = 0;
+    int codeMethodBits;
+    /*check if there is a label with the name of the operand string*/
     labelPtr operandLabel = checkLabelName(operand->string);
+
+    if(operandLabel == NULL) { /*if there isn't a label with the name of the operand string*/
+        fprintf(stderr, "ERROR: no label with the name %s are defined", operand->string);
+        return FAIL;
+    }
+    /*shift the address twice to the left for the code method bits*/
+    operandMemoryWord = operandLabel->address << NUM_OF_CODE_METHOD_BITS;
+    if(operandLabel->isExtarnal) { /*if the label is an external label*/
+        codeMethodBits = EXTERNAL_CODE_METHOD_MASK; /*then the code method is external*/
+    }
+    else {
+        codeMethodBits = RELOCATABLE_CODE_METHOD_MASK; /*then the code method is relocatable*/
+    }
+    operandMemoryWord |= codeMethodBits; /*the memory bits is the connection of the address and the code method*/
+
+    /*update the memory and the memory counter*/
+    actionMemoryBase[IC-MEMORY_START_POS] = operandMemoryWord;
+    IC++;
     return SUCCESS;
 }
 
@@ -87,7 +131,7 @@ int handleDirectAddressing(tokenPtr operand) {
 /**
  * handleImmediateAddressing
  *
- * This function handle operators that in immediate addressing method
+ * This function handle operands that in immediate addressing method
  * The function will convert the number after the '#' to a real number
  * The function will check if the number is valid and then store the number in the action memory base
  * while using the two's complement method
@@ -99,9 +143,10 @@ int handleDirectAddressing(tokenPtr operand) {
  * int - if the function failed or succeeded
  *
  * */
-int handleImmediateAddressing(tokenPtr operator) {
-    char *numberString = operator->string++;
+int handleImmediateAddressing(tokenPtr operand) {
+    char *numberString = operand->string++;
     int realNumber;
+    int operandMemoryWord;
     realNumber = atoi(numberString);
     /*if the number is to big or to small*/
     if(realNumber > MAX_VALID_IMMEDIATE_ADDRESSING_NUMBER || realNumber < MIN_VALID_IMMEDIATE_ADDRESSING_NUMBER) {
@@ -109,9 +154,10 @@ int handleImmediateAddressing(tokenPtr operator) {
         return FAIL;
     }
     if(realNumber < 0) { /*two's complement system*/
-        realNumber += pow(2,NUM_OF_BITS_IN_MEMORY_WORD-2); /*-2 because of the E R A bits*/
+        realNumber += pow(2, NUM_OF_BITS_IN_MEMORY_WORD-2); /*-2 because of the E R A bits*/
     }
-    actionMemoryBase[IC-MEMORY_START_POS] = realNumber;
+    operandMemoryWord = (realNumber << NUM_OF_CODE_METHOD_BITS) | ABSOLUTE_CODE_METHOD_MASK;
+    actionMemoryBase[IC-MEMORY_START_POS] = operandMemoryWord;
     IC++;
     return SUCCESS;
 }
