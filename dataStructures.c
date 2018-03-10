@@ -210,17 +210,9 @@ void setLabel(labelPtr label, char *name, int address, int isAction, int isExtar
  * tokenListHead - the head of the linked list of tokens of the new commandLine
  *
  * */
-void addCommandLine(commandLinePtr *head, int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode, int destinyOperandAddressingMode, tokenPtr tokenListHead) {
-    commandLinePtr new = (commandLinePtr) calloc(sizeof(commandLine), 1);
+void addCommandLine(commandLinePtr *head, commandLinePtr new) {
     commandLinePtr curr = *head;
-    checkFail(new);
-    new->next = NULL;
-    new->lineNumber = lineNumber;
-    new->commandType = commandType;
-    new->hasLabel = hasLabel;
-    new->sourceOperandAddressingMode = sourceOperandAddressingMode;
-    new->destinyOperandAddressingMode = destinyOperandAddressingMode;
-    new->tokenListHead = tokenListHead;
+
     if(*head == NULL) {
         *head = new;
         return;
@@ -229,4 +221,36 @@ void addCommandLine(commandLinePtr *head, int lineNumber, int commandType, int h
         curr = curr->next;
     }
     curr->next = new;
+}
+
+
+/**
+ * setCommandLine
+ *
+ * The function sets a new commandLine with given parameters and return a pointer to the commandLine
+ *
+ * params:
+ * lineNumber - the new commandLine lineNumber
+ * commandType - the new commandLine commandType
+ * hasLabel - if new commandLine has a label
+ * sourceOperandAddressingMode - the new commandLine sourceOperandAddressingMode
+ * destinyOperandAddressingMode - the new commandLine destinyOperandAddressingMode
+ * tokenListHead - the new tokenListHead pointer
+ *
+ * return:
+ * commandLinePtr - the new commandLine pointer
+ *
+ * */
+commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode,
+                                 int destinyOperandAddressingMode, tokenPtr tokenListHead) {
+    commandLinePtr new = (commandLinePtr) calloc(sizeof(commandLine), 1);
+    checkFail(new);
+    new->next = NULL;
+    new->lineNumber = lineNumber;
+    new->commandType = commandType;
+    new->hasLabel = hasLabel;
+    new->sourceOperandAddressingMode = sourceOperandAddressingMode;
+    new->destinyOperandAddressingMode = destinyOperandAddressingMode;
+    new->tokenListHead = tokenListHead;
+    return new;
 }

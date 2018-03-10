@@ -17,12 +17,12 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
     int commandType;
     int lineNumber = 0;
     int success = SUCCESS;
-    int needToFree;
 
     fgets(buff, MAX_LINE, file); /*get the next line*/
     /*run for every line in the file until EOF*/
     while(!feof(file)) {
-        needToFree = TRUE;
+        commandLinePtr currLineCommandLine;
+        int needToFree = TRUE;
         lineNumber++;
         head = splitToTokens(buff);
         curr = head;
@@ -69,7 +69,8 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
                     break;
 
                 case ENTRY:
-                    addCommandLine(secondPassCommandsHead, lineNumber, commandType, hasLabel, FAIL, FAIL, head);
+                    currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head);
+                    addCommandLine(secondPassCommandsHead, currLineCommandLine);
                     needToFree = FALSE;
                     break;
 
@@ -82,9 +83,13 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
                     break;
 
                 default:
-                    if((success = handleActionCommands(head, lineNumber, hasLabel, commandType)) == FAIL) {
+                    currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head);
+                    success = handleActionCommands(head, lineNumber, hasLabel, commandType);
+                    if(success == FAIL) {
                         printLog("ERROR with action command");
                     }
+
+
 
                     break;
             }
@@ -361,13 +366,16 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
         int destinyOperandAddressingMode;
         int isValid;
         tokenPtr firstOperandToken = commandToken->next; /*after the command suppose to be the first operand*/
-        tokenPtr commaToken =  firstOperandToken->next; /*between the two operand suppose to be a comma*/
-        tokenPtr secondOperandToken = commaToken->next; /*after the comma suppose to be the second operand*/
+        tokenPtr commaToken;
+        tokenPtr secondOperandToken;
 
         if(firstOperandToken == NULL) { /*checks if the first operand is NULL*/
             fprintf(stderr, "ERROR: the Command %s requires two operands\n", commands[commandType].name);
             return FAIL;
         }
+
+         commaToken = firstOperandToken->next; /*between the two operand suppose to be a comma*/
+
         if(commaToken == NULL) { /*checks if the there is nofing after the first operand*/
             fprintf(stderr, "ERROR: the Command %s requires two operands\n", commands[commandType].name);
             return FAIL;
@@ -376,6 +384,9 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
             fprintf(stderr, "ERROR: missing comma\n");
             return FAIL;
         }
+
+        secondOperandToken = commaToken->next; /*after the comma suppose to be the second operand*/
+
         if(secondOperandToken == NULL) { /*checks if there is a second operand*/
             fprintf(stderr, "ERROR: the second operand should come after the comma\n");
             return FAIL;

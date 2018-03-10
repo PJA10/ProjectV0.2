@@ -335,7 +335,7 @@ int checkIfValidAddressingMode(int addressingMode, const int *validAddressingMod
             return FAIL;
         }
     }
-    return VALID;
+    return FAIL;
 }
 
 /**
