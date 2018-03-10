@@ -84,13 +84,14 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
 
                 default:
                     currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head);
-                    success = handleActionCommands(head, lineNumber, hasLabel, commandType);
+                    success = handleActionCommands(currLineCommandLine);
                     if(success == FAIL) {
-                        printLog("ERROR with action command");
+                        free(currLineCommandLine);
                     }
-
-
-
+                    else {
+                        addCommandLine(secondPassCommandsHead, currLineCommandLine);
+                        needToFree = FALSE;
+                    }
                     break;
             }
 
@@ -343,10 +344,11 @@ int handleExternCommand(tokenPtr head, int hasLabel, int commandType) {
  * int - if the function failed or succeeded
  *
  * */
-int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int commandType){
-    tokenPtr commandToken = head;
+int handleActionCommands(commandLinePtr actionCommandLine){
+    tokenPtr commandToken = actionCommandLine->tokenListHead;
+    int commandType = actionCommandLine->commandType;
 
-    if(hasLabel){
+    if(actionCommandLine->hasLabel){
         labelPtr newLabel = (labelPtr) calloc(1, sizeof(label));
         char *name = (char *) calloc( MAX_LENGTH_OF_LABEL_NAME + 2, sizeof(char)); /*1 for ':' and 1 for '\0' at the end*/
         checkFail(newLabel);
@@ -354,7 +356,7 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
         /*if there is a label then the second token should be the command*/
         commandToken = commandToken->next;
         /*set new and add it to the list*/
-        strcpy(name, head->string);
+        strcpy(name, actionCommandLine->tokenListHead->string);
         name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
         setLabel(newLabel, name, IC, TRUE, FALSE, FALSE);
         if(!addLabel(&labelTabale, newLabel))
@@ -376,7 +378,7 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
 
          commaToken = firstOperandToken->next; /*between the two operand suppose to be a comma*/
 
-        if(commaToken == NULL) { /*checks if the there is nofing after the first operand*/
+        if(commaToken == NULL) { /*checks if the there is nothing after the first operand*/
             fprintf(stderr, "ERROR: the Command %s requires two operands\n", commands[commandType].name);
             return FAIL;
         }
@@ -398,17 +400,21 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
 
         sourceOperandAddressingMode = checkAddressingMode(firstOperandToken);
         isValid = checkIfValidAddressingMode(sourceOperandAddressingMode ,commands[commandType].sourceOperandValidAddressingModes);
-        if(isValid == FAIL){ /* checks if the adressing mode of the first operand is valid*/
+        if(isValid == FAIL){ /* checks if the addressing mode of the first operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the first operand\n", commands[commandType].name, addressingModes[sourceOperandAddressingMode]);
             return FAIL;
         }
 
         destinyOperandAddressingMode = checkAddressingMode(secondOperandToken);
         isValid = checkIfValidAddressingMode(destinyOperandAddressingMode, commands[commandType].destinyOperandValidAddressingModes);
-        if(isValid == FAIL){ /*checks if the adressing mode of the second operand is valid*/
+        if(isValid == FAIL){ /*checks if the addressing mode of the second operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the second operand\n", commands[commandType].name, addressingModes[destinyOperandAddressingMode]);
             return FAIL;
         }
+
+        /*update actionCommandLine with the now known addressing modes*/
+        actionCommandLine->sourceOperandAddressingMode = sourceOperandAddressingMode;
+        actionCommandLine->destinyOperandAddressingMode = destinyOperandAddressingMode;
     }
     else if(commandType<=ONE_OPERAND){ /*checks if the command requires one operand*/
         int destinyOperandAddressingMode;
@@ -416,7 +422,7 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
         tokenPtr firstOperandToken = commandToken->next; /*after the command suppose to be the first operand*/
 
         if(firstOperandToken == NULL) { /*checks if the first operand is NULL*/
-            fprintf(stderr, "ERROR: the Command %s requires one\n", commands[commandType].name);
+            fprintf(stderr, "ERROR: the command %s requires one operand, got zero\n", commands[commandType].name);
             return FAIL;
         }
         if(firstOperandToken->next != NULL) { /*checks if there are too many operands*/
@@ -425,10 +431,13 @@ int handleActionCommands(tokenPtr head, int lneNumber, int hasLabel, int command
         }
         destinyOperandAddressingMode = checkAddressingMode(firstOperandToken);
         isValid = checkIfValidAddressingMode(destinyOperandAddressingMode ,commands[commandType].destinyOperandValidAddressingModes);
-        if(isValid == FAIL){ /*checks if the adressing mode of the only operand is valid*/
+        if(isValid == FAIL){ /*checks if the addressing mode of the only operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the operand\n", commands[commandType].name, addressingModes[destinyOperandAddressingMode]);
             return FAIL;
         }
+
+        /*update actionCommandLine with the now known addressing mode*/
+        actionCommandLine->destinyOperandAddressingMode = destinyOperandAddressingMode;
     }
     else if(commandToken -> next != NULL){ /*if we are here, the command requires zero operands so we check for extra operands*/
         fprintf(stderr, "ERROR: expected end of line after %s\n", commands[commandType].name);

@@ -59,12 +59,27 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
                 break;
 
         }
+        curr = curr->next; /*go to the comma*/
+    }
+    if(actionCommandLine->commandType <= ONE_OPERAND) {
+        curr = curr->next; /*from the comma or the command move to the destiny operand*/
+        switch (actionCommandLine->destinyOperandAddressingMode) {
+            case IMMEDIATE_ADDRESSING:
+                success = handleImmediateAddressing(curr);
+                break;
+
+            case DIRECT_ADDRESSING:
+                success = handleDirectAddressing(curr);
+                break;
+
+        }
     }
     return success;
 }
 
 
-int handleDirectAddressing(tokenPtr operator) {
+int handleDirectAddressing(tokenPtr operand) {
+    labelPtr operandLabel = checkLabelName(operand->string);
     return SUCCESS;
 }
 

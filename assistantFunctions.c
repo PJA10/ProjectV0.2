@@ -282,10 +282,13 @@ labelPtr checkLabelName(char *name){
  *
  **/
 int checkAddressingMode(tokenPtr operand) {
-    char *number = operand->string;
-    number++;
-    if(operand -> string[0] == '#' && isNumber(number)){/* checks if the operand uses immediate addresing mode*/
-        return IMMEDIATE_ADDRESSING;
+    if(operand -> string[0] == '#') {/* checks if the operand uses immediate addresing mode*/
+        char *number = operand->string;
+        number++;
+        if(isNumber(number)) {
+            return IMMEDIATE_ADDRESSING;
+        }
+        return FAIL;
     }
     else{
         int i;
@@ -322,7 +325,7 @@ int checkAddressingMode(tokenPtr operand) {
  * validAddressingModes - the array of valid addressing modes
  *
  * return:
- * int - if the adddressing mode is valid or ileagal
+ * int - if the addressing mode is valid or ileagal
  *
  **/
 int checkIfValidAddressingMode(int addressingMode, const int *validAddressingModes) {
