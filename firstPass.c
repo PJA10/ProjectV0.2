@@ -328,7 +328,7 @@ int handleExternCommand(tokenPtr head, int hasLabel, int commandType) {
     checkFail(name);
     /*set new and add it to the list*/
     strcpy(name, curr->string);
-    setLabel(newLabel, name, DC, EXTERN_LABEL, FALSE);
+    setLabel(newLabel, name, 0, EXTERN_LABEL, FALSE);
     if(addLabel(&labelTabale, newLabel) == FAIL)
         return FAIL;
     return SUCCESS;

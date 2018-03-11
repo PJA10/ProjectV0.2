@@ -35,6 +35,7 @@ void printInBinary(int num);
 void printMemoryBase(int *memoryBase);
 void addNumberToActionMemoryBase(int number);
 void addAddressToActionMemoryBase(labelPtr label);
+char* intToBase32(int num);
 
 
 

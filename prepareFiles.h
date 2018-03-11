@@ -4,8 +4,9 @@
 
 #include "stdio.h"
 
-void prepareFiles();
+void prepareFiles(char *fileName);
 FILE *getFile(char *, char *);
+int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char *inputFileName);
 
 
 #endif

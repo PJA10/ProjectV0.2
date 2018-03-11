@@ -60,7 +60,7 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
         }
         curr = curr->next; /*go to the comma*/
     }
-    if(commandType <= ONE_OPERAND && commandType != LEA) {
+    if(commandType <= ONE_OPERAND) {
         curr = curr->next; /*from the comma or the command move to the destiny operand*/
         success = codeOperand(destinyOperandAddressingModeCode, curr, DESTINY);
     }
