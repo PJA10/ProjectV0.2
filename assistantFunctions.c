@@ -519,7 +519,7 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
     if(sourceAddressingMode == STRUCT_ACCESS_ADRESSING){ /*if the operand is a struct we need to save two lines*/
         sum += 2;
     }
-    else if(destinyAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
+    else if(sourceAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
         sum += 1;
     }
     if(destinyAddressingMode == STRUCT_ACCESS_ADRESSING){/*if the operand is a struct we need to save two lines*/
@@ -546,17 +546,16 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
  * */
 void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType) {
     int codedActionCommand;
-    if(destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode != NO_OPERAND) {
-        codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4;
+    if(destinyOperandAddressingMode != NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND) {
+        codedActionCommand = commandType << 6 | destinyOperandAddressingMode << 2;
     }
-    else if (sourceOperandAddressingMode == NO_OPERAND){
+    else if (destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND){
         codedActionCommand = commandType << 6;
     }
     else{
         codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4 | destinyOperandAddressingMode << 2;
     }
     actionMemoryBase[IC - MEMORY_START_POS] = codedActionCommand;
-    printInBinary(codedActionCommand);
     IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
 }
 
