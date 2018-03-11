@@ -636,12 +636,20 @@ void addAddressToActionMemoryBase(labelPtr label) {
     IC++;
 }
 
-
+/**
+ * intToBase32
+ *
+ * The function gets an int and returns a string of the wierd 32 base
+ *
+ * paramsL
+ * num - the int that you want to convert to the 32 base
+ *
+ * */
 char *intToBase32(int num) {
-    int mask1 = 1024 - 1 - (32 - 1);
-    int mask2 = 32 - 1;
+    int mask1 = 1024 - 1 - (32 - 1); /*1111100000*/
+    int mask2 = 32 - 1;/*0000011111*/
     char *base32String = (char *) calloc(3, sizeof(char));
-    base32String[0] = base32[(num&mask1) >> 5];
+    base32String[0] = base32[(num&mask1) >> 5]; /*because the 32 is 2^5, we can take every 5 digits of the number in base 2(binary) and turn it to one number*/
     base32String[1] = base32[num&mask2];
     base32String[2] = '\0';
     return base32String;
