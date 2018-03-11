@@ -12,6 +12,7 @@
 int secondPass(commandLinePtr secondPassCommandsHead) {
     commandLinePtr curr = secondPassCommandsHead;
     int isErrorsFlag = FALSE;
+    IC = MEMORY_START_POS;
     while(curr) {
         int success = SUCCESS;
         switch (curr->commandType) {
@@ -39,50 +40,87 @@ int secondPass(commandLinePtr secondPassCommandsHead) {
 int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
     tokenPtr  commandToken = actionCommandLine->tokenListHead;
     tokenPtr curr;
-    int sourceOperandAddressingModeCode = 0;
-    int destinyOperandAddressingModeCode = 0;
+    int sourceOperandAddressingModeCode = actionCommandLine->sourceOperandAddressingMode;
+    int destinyOperandAddressingModeCode = actionCommandLine->destinyOperandAddressingMode;
     int success = SUCCESS;
+    int commandType = actionCommandLine->commandType;
 
     IC++; /*for the memory word that discribe the command*/
     if(actionCommandLine->hasLabel) {
         commandToken = commandToken->next;
     }
     curr = commandToken;
-    if(actionCommandLine->commandType <= TWO_OPERANDS) {
+    if(commandType <= TWO_OPERANDS || commandType == LEA) {
         curr = curr->next;
-        switch (actionCommandLine->sourceOperandAddressingMode) {
-            case IMMEDIATE_ADDRESSING:
-                success = handleImmediateAddressing(curr);
-                break;
+        success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE);
 
-            case DIRECT_ADDRESSING:
-                success = handleDirectAddressing(curr);
-                break;
-
-            case STRUCT_ACCESS_ADRESSING:
-                success = handleStructAddressing(curr);
-                break;
-
+        if(sourceOperandAddressingModeCode == REGISTERS_ADDRESSING &&
+            destinyOperandAddressingModeCode == REGISTERS_ADDRESSING) {
+            IC--;
         }
         curr = curr->next; /*go to the comma*/
     }
-    if(actionCommandLine->commandType <= ONE_OPERAND) {
+    if(commandType <= ONE_OPERAND && commandType != LEA) {
         curr = curr->next; /*from the comma or the command move to the destiny operand*/
-        switch (actionCommandLine->destinyOperandAddressingMode) {
-            case IMMEDIATE_ADDRESSING:
-                success = handleImmediateAddressing(curr);
-                break;
-
-            case DIRECT_ADDRESSING:
-                success = handleDirectAddressing(curr);
-                break;
-
-            case STRUCT_ACCESS_ADRESSING:
-                success = handleStructAddressing(curr);
-                break;
-        }
+        success = codeOperand(destinyOperandAddressingModeCode, curr, DESTINY);
     }
     return success;
+}
+
+
+int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand) {
+    int success = SUCCESS;
+
+    switch (operandAddressingMode) {
+        case IMMEDIATE_ADDRESSING:
+            success = handleImmediateAddressing(operandToken);
+            break;
+
+        case DIRECT_ADDRESSING:
+            success = handleDirectAddressing(operandToken);
+            break;
+
+        case STRUCT_ACCESS_ADRESSING:
+            success = handleStructAddressing(operandToken);
+            break;
+
+        case REGISTERS_ADDRESSING:
+            success = handleRegisterAddressing(operandToken, whatOperand);
+            break;
+    }
+
+    return success;
+}
+
+
+/**
+ * handleRegisterAddressing
+ *
+ * This function handle operand that in register addressing method
+ * The function will add the register number to the memory in the right bits in the memory word with dependence
+ * with witch operand it is
+ *
+ * params:
+ * operand - a pointer to the operand token
+ * whatOperand - witch operand is it, source or destiny
+ *
+ * */
+int handleRegisterAddressing(tokenPtr operand, int whatOperand) {
+    int registerNumber;
+    int binaryRegisterNum;
+
+    registerNumber = operand->string[1] - '0'; /*the second char in the string will be the register number, right after the 'r'*/
+    /*minus '0' to convert to int, '1' - 1, '2' - 2 and so on*/
+    if(whatOperand == DESTINY) { /*if this is the destiny operand*/
+        binaryRegisterNum = registerNumber << NUM_OF_CODE_METHOD_BITS;
+    }
+    else{ /*if this is the source operand*/
+        binaryRegisterNum = (registerNumber << NUM_OF_CODE_METHOD_BITS) << NUM_OF_REGISTER_NUMBER_BITS;
+    }
+    binaryRegisterNum = binaryRegisterNum | ABSOLUTE_CODE_METHOD_MASK; /*just in case the mast will change from 0*/
+    actionMemoryBase[IC-MEMORY_START_POS] += binaryRegisterNum; /*add to the memory*/
+    IC++; /*update the counter*/
+    return SUCCESS;
 }
 
 
@@ -154,8 +192,6 @@ int handleStructAddressing(tokenPtr operand) {
  *
  * */
 int handleDirectAddressing(tokenPtr operand) {
-    int operandMemoryWord = 0;
-    int codeMethodBits;
     /*check if there is a label with the name of the operand string*/
     labelPtr operandLabel = checkLabelName(operand->string);
 
@@ -185,9 +221,9 @@ int handleDirectAddressing(tokenPtr operand) {
  *
  * */
 int handleImmediateAddressing(tokenPtr operand) {
-    char *numberString = operand->string++;
+    char *numberString = operand->string;
+    numberString++;
     int realNumber;
-    int operandMemoryWord;
     realNumber = atoi(numberString);
     /*if the number is to big or to small*/
     if(realNumber > MAX_VALID_IMMEDIATE_ADDRESSING_NUMBER || realNumber < MIN_VALID_IMMEDIATE_ADDRESSING_NUMBER) {

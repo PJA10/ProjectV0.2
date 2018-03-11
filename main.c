@@ -8,7 +8,6 @@
 #include "firstPass.h"
 #include "prepareFiles.h"
 #include "assistantFunctions.h"
-#include "dataStructures.h"
 #include "secondPass.h"
 
 int IC = MEMORY_START_POS;
@@ -75,7 +74,8 @@ int main(int args, char* argv[]) {
         }
         freeGlobal();
     }
-    printActionMemoryBase();
+    printMemoryBase(actionMemoryBase);
+    printMemoryBase(dataMemoryBase);
     return EXIT_SUCCESS;
 }
 
