@@ -515,11 +515,11 @@ void addNumberToDataMemoryBase(int newNumber) {
  *
  * */
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
-    int sum = 0;
+    int sum = 1;
     if(sourceAddressingMode == STRUCT_ACCESS_ADRESSING){ /*if the operand is a struct we need to save two lines*/
         sum += 2;
     }
-    else if(destinyAddressingMode != -NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
+    else if(destinyAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
         sum += 1;
     }
     if(destinyAddressingMode == STRUCT_ACCESS_ADRESSING){/*if the operand is a struct we need to save two lines*/
@@ -529,9 +529,9 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
         sum += 1;
     }
     if(destinyAddressingMode == REGISTERS_ADDRESSING && sourceAddressingMode == REGISTERS_ADDRESSING){ /* if both of the operands are register, we need to save only one line*/
-        sum = 1;
+        sum -= 1;
     }
-    return sum + 1;
+    return sum;
 }
 
 /* *
