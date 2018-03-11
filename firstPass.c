@@ -370,7 +370,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
             return FAIL;
     }
 
-    if(commandType <= TWO_OPERANDS){ /*checks if the command requires two operand*/
+    if(commandType <= TWO_OPERANDS || commandType == LEA){ /*checks if the command requires two operand*/
         int sourceOperandAddressingMode;
         int destinyOperandAddressingMode;
         int isValid;
@@ -423,7 +423,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         actionCommandLine->sourceOperandAddressingMode = sourceOperandAddressingMode;
         actionCommandLine->destinyOperandAddressingMode = destinyOperandAddressingMode;
     }
-    else if(commandType<=ONE_OPERAND){ /*checks if the command requires one operand*/
+    else if(commandType<=ONE_OPERAND && commandType!=LEA){ /*checks if the command requires one operand*/
         int destinyOperandAddressingMode;
         int isValid;
         tokenPtr firstOperandToken = commandToken->next; /*after the command suppose to be the first operand*/

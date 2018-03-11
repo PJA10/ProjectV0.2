@@ -17,7 +17,7 @@
 #define NUM_OF_REGISTERS 8
 #define MAX_LENGTH_OF_LABEL_NAME 30
 #define MAX_MEMORY_LENGTH 1000
-#define TWO_OPERANDS LEA
+#define TWO_OPERANDS CLR
 #define ONE_OPERAND JSR
 #define IMMEDIATE_ADDRESSING 0
 #define DIRECT_ADDRESSING 1
@@ -42,7 +42,7 @@
 enum {ACTION_LABEL, STRUCT_LABEL, EXTERN_LABEL, DATA_LABEL};
 
 enum {DATA, STRING, STRUCT, EXTERN, ENTRY, /*data commands*/
-    MOV, CMP, ADD, SUB, LEA, NOT, CLR, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP, /*action commands*/
+    MOV, CMP, ADD, SUB, NOT, CLR, LEA, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP, /*action commands*/
     UNKNOWN}; /*others*/
 
 #endif
