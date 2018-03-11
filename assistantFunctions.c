@@ -534,11 +534,11 @@ void addNumberToDataMemoryBase(int newNumber) {
  *
  * */
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
-    int sum = 0;
+    int sum = 1;
     if(sourceAddressingMode == STRUCT_ACCESS_ADRESSING){ /*if the operand is a struct we need to save two lines*/
         sum += 2;
     }
-    else if(destinyAddressingMode != -NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
+    else if(sourceAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
         sum += 1;
     }
     if(destinyAddressingMode == STRUCT_ACCESS_ADRESSING){/*if the operand is a struct we need to save two lines*/
@@ -548,9 +548,9 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
         sum += 1;
     }
     if(destinyAddressingMode == REGISTERS_ADDRESSING && sourceAddressingMode == REGISTERS_ADDRESSING){ /* if both of the operands are register, we need to save only one line*/
-        sum = 1;
+        sum -= 1;
     }
-    return sum + 1;
+    return sum;
 }
 
 /**
@@ -565,10 +565,10 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
  * */
 void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType) {
     int codedActionCommand;
-    if(destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode != NO_OPERAND) {
-        codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4;
+    if(destinyOperandAddressingMode != NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND) {
+        codedActionCommand = commandType << 6 | destinyOperandAddressingMode << 2;
     }
-    else if (sourceOperandAddressingMode == NO_OPERAND){
+    else if (destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND){
         codedActionCommand = commandType << 6;
     }
     else{
@@ -578,6 +578,38 @@ void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddres
     IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
 }
 
+
+
+void printInBinary(int num) {
+    int mask;
+    for(mask = 512; mask!= 0; mask = mask>>1) {
+        if(num&mask) {
+            fprintf(stderr , "%d", 1);
+        }
+        else{
+            fprintf(stderr, "%d",0);
+        }
+    }
+    fprintf(stderr, "\n");
+}
+
+
+void printActionMemoryBase() {
+    int i,j;
+    for(i = 0; 1; i++){
+        printInBinary(actionMemoryBase[i]);
+        if(actionMemoryBase[i] == 0){
+            j++;
+        }
+        else{
+            j=0;
+        }
+        if(j == 5){
+            break;
+        }
+
+    }
+};
 
 /**
  * addAddressToActionMemoryBase
@@ -603,3 +635,4 @@ void addAddressToActionMemoryBase(labelPtr label) {
     actionMemoryBase[IC-MEMORY_START_POS] = operandMemoryWord;
     IC++;
 }
+
