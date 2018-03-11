@@ -42,6 +42,7 @@ const command commands[NUM_OF_COMMAND_TYPES + 1] = { /*a array to store all the 
 };
 const char *registers[] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
 const char *addressingModes[] = {"immediate addressing", "direct addressing", "struct access addressing", "registers addressing"};
+const char base32[] = {'!','@','#','$','%','^','&','*','<','>','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v'};
 int actionMemoryBase[MAX_MEMORY_LENGTH];
 int dataMemoryBase[MAX_MEMORY_LENGTH];
 
@@ -49,7 +50,8 @@ int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
     commandLinePtr secondPassCommandsHead= NULL;
     logIsOn = TRUE; /*turn on the log print*/
-
+    fopen("ps.ob","r+");
+    
     if(args < MIN_VAL_OF_ARGS) {
         printf("Error, have to get at lest one file name\n");
         return FAIL;

@@ -636,3 +636,10 @@ void addAddressToActionMemoryBase(labelPtr label) {
     IC++;
 }
 
+char* intToBase32(int num){
+    int mask1 = 1024 - 1 - (32 - 1), mask2 = 32 - 1;
+    char* base32Int;
+    base32Int[0] = base32[(num&mask1) >> 5];
+    base32Int[1] = base32[num&mask2];
+
+}
