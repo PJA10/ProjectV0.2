@@ -128,15 +128,21 @@ int handleDataCommands(tokenPtr head, int hasLabel, int commandType) {
     tokenPtr commandToken = head;
     int success = SUCCESS, i;
     if(hasLabel) {
+        int labelType = DATA_LABEL;
         labelPtr newLabel = (labelPtr) calloc(sizeof(label), 1);
         char *name = (char *) calloc(sizeof(char), MAX_LENGTH_OF_LABEL_NAME + 2); /*1 for ':' and 1 for '\0' at the end*/
         checkFail(newLabel);
         checkFail(name);
         commandToken = head->next; /*if there is a label then the second token should be the command*/
+
         /*set new and add it to the list*/
         strcpy(name, head->string);
         name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
-        setLabel(newLabel, name, DC, FALSE, FALSE, FALSE);
+
+        if(commandType == STRUCT) {
+            labelType = STRUCT_LABEL;
+        }
+        setLabel(newLabel, name, DC, labelType, FALSE);
         if(addLabel(&labelTabale, newLabel) == FAIL)
             return FAIL;
     }
@@ -322,11 +328,12 @@ int handleExternCommand(tokenPtr head, int hasLabel, int commandType) {
     checkFail(name);
     /*set new and add it to the list*/
     strcpy(name, curr->string);
-    setLabel(newLabel, name, DC, FALSE, TRUE, FALSE);
+    setLabel(newLabel, name, DC, EXTERN_LABEL, FALSE);
     if(addLabel(&labelTabale, newLabel) == FAIL)
         return FAIL;
     return SUCCESS;
 }
+
 
 /**
  * handleActionCommand
@@ -358,7 +365,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         /*set new and add it to the list*/
         strcpy(name, actionCommandLine->tokenListHead->string);
         name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
-        setLabel(newLabel, name, IC, TRUE, FALSE, FALSE);
+        setLabel(newLabel, name, IC, ACTION_LABEL, FALSE);
         if(!addLabel(&labelTabale, newLabel))
             return FAIL;
     }

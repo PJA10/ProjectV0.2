@@ -21,8 +21,7 @@ typedef struct Label{
 
     char *name;
     int address;
-    int isExtarnal;
-    int isAction;
+    int type;
     int hasEntry;
     labelPtr next;
 
@@ -31,7 +30,7 @@ typedef struct Label{
 int addLabel(labelPtr *, labelPtr);
 void freeLabelList(labelPtr head);
 void freeLastLabel(labelPtr head);
-void setLabel(labelPtr, char *, int, int, int, int);
+void setLabel(labelPtr, char *, int, int, int);
 
 
 /*commands*/

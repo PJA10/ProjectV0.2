@@ -185,11 +185,10 @@ void freeLastLabel(labelPtr head) {
  * isExtarnal - the isExtarnal to set to
  *
  * */
-void setLabel(labelPtr label, char *name, int address, int isAction, int isExtarnal, int hasEntry) {
+void setLabel(labelPtr label, char *name, int address, int type, int hasEntry) {
     label->name = name;
     label->address = address;
-    label->isAction = isAction;
-    label->isExtarnal = isExtarnal;
+    label->type = type;
     label->hasEntry = hasEntry;
 }
 

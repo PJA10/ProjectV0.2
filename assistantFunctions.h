@@ -33,6 +33,8 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode);
 void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType);
 void printInBinary(int num);
 void printActionMemoryBase();
+void addNumberToActionMemoryBase(int number);
+void addAddressToActionMemoryBase(labelPtr label);
 
 
 
