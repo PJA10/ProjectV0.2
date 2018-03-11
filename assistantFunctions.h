@@ -32,7 +32,7 @@ void addNumberToDataMemoryBase(int newNumber);
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode);
 void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType);
 void printInBinary(int num);
-void printActionMemoryBase();
+void printMemoryBase(int *memoryBase);
 void addNumberToActionMemoryBase(int number);
 void addAddressToActionMemoryBase(labelPtr label);
 

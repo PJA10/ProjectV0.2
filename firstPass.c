@@ -450,7 +450,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         fprintf(stderr, "ERROR: expected end of line after %s\n", commands[commandType].name);
         return FAIL;
     }
-    codeActionCommand(actionCommandLine->destinyOperandAddressingMode,actionCommandLine->sourceOperandAddressingMode,actionCommandLine->commandType-FIRST_COMMAND_ID);
+    codeActionCommand(actionCommandLine->destinyOperandAddressingMode, actionCommandLine->sourceOperandAddressingMode, actionCommandLine->commandType-FIRST_COMMAND_ID);
     return SUCCESS; /* if we are here, there are no errors*/
 }
 

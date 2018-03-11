@@ -594,11 +594,11 @@ void printInBinary(int num) {
 }
 
 
-void printActionMemoryBase() {
+void printMemoryBase(int *memoryBase) {
     int i,j;
     for(i = 0; 1; i++){
-        printInBinary(actionMemoryBase[i]);
-        if(actionMemoryBase[i] == 0){
+        printInBinary(memoryBase[i]);
+        if(memoryBase[i] == 0){
             j++;
         }
         else{
