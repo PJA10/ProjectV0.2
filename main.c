@@ -49,8 +49,7 @@ int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
     commandLinePtr secondPassCommandsHead= NULL;
     logIsOn = TRUE; /*turn on the log print*/
-    fopen("ps.ob","r+");
-    
+
     if(args < MIN_VAL_OF_ARGS) {
         printf("Error, have to get at lest one file name\n");
         return FAIL;

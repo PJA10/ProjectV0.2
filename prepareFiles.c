@@ -13,15 +13,6 @@ void prepareFiles(char *inputFileName){
     FILE *externFile;
     FILE *entryFile;
     if(createOutputFiles(&objFile, &externFile, &entryFile, inputFileName) == FAIL) {
-        if(objFile != NULL) {
-            fclose(objFile);
-        }
-        if(externFile != NULL) {
-            fclose(externFile);
-        }
-        if(entryFile != NULL) {
-            fclose(entryFile);
-        }
         return;
     }
     makeObjFile(objFile);
@@ -61,13 +52,22 @@ int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char 
     char *fileName = concat(inputFileName, ".ob");
     (*objFIle) = getFile(fileName, "w");
     free(fileName);
+    if(*objFIle == NULL) {
+        return FAIL;
+    }
     fileName = concat(inputFileName, ".ext");
     (*externFile) = getFile(fileName, "w");
     free(fileName);
+    if(*externFile == NULL) {
+        fclose(*objFIle);
+        return FAIL;
+    }
     fileName = concat(inputFileName, ".ent");
     (*entryFile) = getFile(fileName, "w");
     free(fileName);
-    if(*objFIle == NULL || *externFile == NULL || *entryFile == NULL) {
+    if(*entryFile == NULL) {
+        fclose(*objFIle);
+        fclose(*entryFile);
         return FAIL;
     }
 }
