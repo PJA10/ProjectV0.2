@@ -7,6 +7,27 @@
 #include "globalVars.h"
 
 /**
+ * firstPass
+ *
+ * This function is going over the file and handle every by it's command type
+ * If there is a error in one of the file lines the function will return FAIL
+ * Every line the function split to a linked list and tokens
+ * If the line is a data command the line will oode the data into the data memory base
+ * If the line is an extern command the function will add the label as extern label
+ * If the line is an action command the function will code the first memory word of the command
+ * after checking the number of operands and their addressing mode after that the function will leave memory space for
+ * the operands code
+ * Additionally the function will make a linked list of the action and entry commands lined for the second pass
+ * with the needed information on the line
+ * There is no other actions on entry commands
+ *
+ * params:
+ * file - the input file to read from
+ * secondPassCommandsHead - the empty second pass commandLine linked list to be filled
+ *
+ * return:
+ * int - if there are errors in the user's code or not
+ *
  * */
 int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
     int isErrorsFlag = FALSE; /*a flag to point if there has been a error in the users code*/

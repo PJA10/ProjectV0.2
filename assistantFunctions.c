@@ -158,7 +158,7 @@ void checkFail(void *pointer) {
  * */
 int checkIfHasValidLabel(tokenPtr head) {
 	if(head -> string[strlen(head -> string)-1] == ':'){
-        char labelName[MAX_LENGTH_OF_LABEL_NAME + 2]; /*1 for ':' and 1 for the '\0' at the end*/
+        char labelName[MAX_LENGTH_OF_LABEL_NAME + 1]; /*1 for ':'*/
         strcpy(labelName, head->string);
         labelName[strlen(labelName) - 1] = '\0'; /*delete the ':'*/
         if(checkIfValidLabelName(labelName) == FAIL)
@@ -173,7 +173,7 @@ int checkIfHasValidLabel(tokenPtr head) {
 /**
  * checkIfValidLabelName
  *
- * The function check if a string is a valid name for a label, is must be less the 31 chars, start with a alpha
+ * The function check if a string is a valid name for a label, is must be less the 30 chars, start with a alpha
  * and have only alphas and numbers
  *
  * params:
@@ -621,12 +621,13 @@ void printMemoryBase(int *memoryBase) {
  * label - the label the we want to add the address of
  *
  * */
-void addAddressToActionMemoryBase(labelPtr label) {
+void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferenceHead) {
     int operandMemoryWord;
     int codeMethodBits;
     operandMemoryWord = label->address << NUM_OF_CODE_METHOD_BITS;
     if(label->type == EXTERN_LABEL) { /*if the label is an external label*/
         codeMethodBits = EXTERNAL_CODE_METHOD_MASK; /*then the code method is external*/
+        addExternReference(externReferenceHead, label->name, IC);
     }
     else {
         codeMethodBits = RELOCATABLE_CODE_METHOD_MASK; /*then the code method is relocatable*/
@@ -637,12 +638,24 @@ void addAddressToActionMemoryBase(labelPtr label) {
 }
 
 
-char *intToBase32(int num) {
-    int mask1 = 1024 - 1 - (32 - 1);
-    int mask2 = 32 - 1;
-    char *base32String = (char *) calloc(3, sizeof(char));
-    base32String[0] = base32[(num&mask1) >> 5];
-    base32String[1] = base32[num&mask2];
+/**
+ * intToBase32
+ *
+ * The function convert a given int into the strange 32 base
+ * The function will store the result in a given string
+ * The function assume that the given length is at lest 3
+ *
+ * params:
+ * output - the string where to store the converted number
+ * num - the number that need to be converted
+ *
+ * */
+void intToBase32(char *output, int num) {
+    int firstFiveBits = ((int) pow(2, 5)) - 1; /*-1 for getting every bit on*/
+    int lastFiveBits = (((int) pow(2, 10)) -1) - firstFiveBits; /*-1 for getting every bit on, - firstFiveBits because we want only the lasy five bits*/
+    char base32String[2]; /*two 32 base chars represents a memory word and 1 char for end of string sign*/
+    base32String[0] = base32[(num & lastFiveBits) >> 5];
+    base32String[1] = base32[num & firstFiveBits];
     base32String[2] = '\0';
-    return base32String;
+    strcpy(output, base32String);
 }
