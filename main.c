@@ -47,7 +47,8 @@ int dataMemoryBase[MAX_MEMORY_LENGTH];
 
 int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
-    commandLinePtr secondPassCommandsHead= NULL;
+    commandLinePtr secondPassCommandsHead = NULL;
+    externReferencePtr externReferencesHead = NULL;
     logIsOn = TRUE; /*turn on the log print*/
 
     if(args < MIN_VAL_OF_ARGS) {
@@ -67,10 +68,12 @@ int main(int args, char* argv[]) {
 
         if(firstPass(file, &secondPassCommandsHead) == SUCCESS) {
             updateDataLabelsAddress();
-            if(secondPass(secondPassCommandsHead) == SUCCESS) {
-                prepareFiles(argv[fileNum]);
+            if(secondPass(secondPassCommandsHead, &externReferencesHead) == SUCCESS) {
+                prepareFiles(argv[fileNum], externReferencesHead);
             }
         }
+        freeExternReferenceList(externReferencesHead);
+        freeCommandLineList(secondPassCommandsHead);
         freeGlobal();
     }
     printMemoryBase(actionMemoryBase);
