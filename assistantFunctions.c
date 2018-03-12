@@ -579,7 +579,16 @@ void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddres
 }
 
 
-
+/**
+ * printInBinary
+ *
+ * A debug function
+ * The function prints a number in binary
+ *
+ * params:
+ * num - the number that need to be printed in binary
+ *
+ * */
 void printInBinary(int num) {
     int mask;
     for(mask = 512; mask!= 0; mask = mask>>1) {
@@ -594,9 +603,19 @@ void printInBinary(int num) {
 }
 
 
+/**
+ * printMemoryBase
+ *
+ * A debug function
+ * The function prints a memory base until there are five zeros in one sequence
+ *
+ * params:
+ * memoryBase - witch memory base to print
+ *
+ * */
 void printMemoryBase(int *memoryBase) {
     int i,j;
-    for(i = 0; 1; i++){
+    for(i = 0;; i++){
         printInBinary(memoryBase[i]);
         if(memoryBase[i] == 0){
             j++;
@@ -609,7 +628,8 @@ void printMemoryBase(int *memoryBase) {
         }
 
     }
-};
+}
+
 
 /**
  * addAddressToActionMemoryBase
