@@ -15,6 +15,11 @@ typedef struct Token{
 
 }token;
 
+
+void addToken(tokenPtr *, char *);
+void freeTokenList(tokenPtr);
+
+
 /*labels table list*/
 typedef struct Label *labelPtr;
 typedef struct Label{
@@ -55,9 +60,18 @@ typedef struct CommandLine{
 
 void addCommandLine(commandLinePtr *head, commandLinePtr new);
 commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode, int destinyOperandAddressingMode, tokenPtr tokenListHead);
+void freeCommandLineList(commandLinePtr head);
 
 
-void addToken(tokenPtr *, char *);
-void freeTokenList(tokenPtr);
+/*extern reference*/
+typedef struct ExternReference *externReferencePtr;
+typedef struct ExternReference{
+    char name[30];
+    int address;
+    externReferencePtr next;
+}externReference;
+
+void addExternReference(externReferencePtr *externReferenceHead, char *name, int address);
+void freeExternReferenceList(externReferencePtr head);
 
 #endif

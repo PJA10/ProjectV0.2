@@ -34,8 +34,8 @@ void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddres
 void printInBinary(int num);
 void printMemoryBase(int *memoryBase);
 void addNumberToActionMemoryBase(int number);
-void addAddressToActionMemoryBase(labelPtr label);
-char* intToBase32(int num);
+void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferenceHead);
+void intToBase32(char *,int num);
 
 
 

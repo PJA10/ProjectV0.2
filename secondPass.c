@@ -8,23 +8,37 @@
 
 
 /**
+ * secondPass
+ *
+ * This function run over a linked list with every action and entry command
+ * The function code actions operands and flag the labels with .entry command
+ * The function runs after first pass and and because of that our label table are now completed
+ * and we can do the thing that were mentioned
+ *
+ * params:
+ * secondPassCommandsHead - the linked list of commandLine with the action and entry commands
+ * externReferenceHead - a empty linked list of the external labels references to be fill
+ *
+ * return:
+ * int - if there is a error in the user's code
+ *
  * */
-int secondPass(commandLinePtr secondPassCommandsHead) {
+int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *externReferenceHead) {
     commandLinePtr curr = secondPassCommandsHead;
     int isErrorsFlag = FALSE;
-    IC = MEMORY_START_POS;
-    while(curr) {
+    IC = MEMORY_START_POS; /*we run over all the memory again*/
+    while(curr) { /*run over te commandLine linked list*/
         int success = SUCCESS;
         switch (curr->commandType) {
             case ENTRY:
-                success = handleEntryCommand(curr);
+                success = handleEntryCommand(curr); /*if the current command is .entry*/
                 break;
 
-            default:
-                success = handleSecondPassActionCommands(curr);
+            default: /*if the current command is an action*/
+                success = handleSecondPassActionCommands(curr, externReferenceHead);
                 break;
         }
-        if(success == FAIL) {
+        if(success == FAIL) { /*if there was an error in the command*/
             fprintf(stderr, "in line number: %d\n", curr->lineNumber);
             isErrorsFlag = TRUE;
         }
@@ -37,7 +51,22 @@ int secondPass(commandLinePtr secondPassCommandsHead) {
 }
 
 
-int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
+/**
+ * handleSecondPassActionCommands
+ *
+ * This function handle command while in the second pass
+ * The function code the command operands as needed
+ * If there is an error with the command operands the function will return FAIL
+ *
+ * params:
+ * actionCommandLine - the commandLine of the action command
+ * externReferenceHead - a linked list of every extern reference as an operand
+ *
+ * return:
+ * int - if there is a error in the user's operands
+ *
+ * */
+int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externReferencePtr *externReferenceHead) {
     tokenPtr  commandToken = actionCommandLine->tokenListHead;
     tokenPtr curr;
     int sourceOperandAddressingModeCode = actionCommandLine->sourceOperandAddressingMode;
@@ -52,23 +81,38 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine) {
     curr = commandToken;
     if(commandType <= TWO_OPERANDS || commandType == LEA) {
         curr = curr->next;
-        success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE);
+        success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE, externReferenceHead);
 
         if(sourceOperandAddressingModeCode == REGISTERS_ADDRESSING &&
-            destinyOperandAddressingModeCode == REGISTERS_ADDRESSING) {
+           destinyOperandAddressingModeCode == REGISTERS_ADDRESSING) {
             IC--;
         }
         curr = curr->next; /*go to the comma*/
     }
     if(commandType <= ONE_OPERAND) {
         curr = curr->next; /*from the comma or the command move to the destiny operand*/
-        success = codeOperand(destinyOperandAddressingModeCode, curr, DESTINY);
+        success = codeOperand(destinyOperandAddressingModeCode, curr, DESTINY, externReferenceHead);
     }
     return success;
 }
 
 
-int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand) {
+/**
+ * codeOperand
+ *
+ * The function code a given operand to the action memory base
+ *
+ * params:
+ * operandAddressingMode - the operand addressing mode
+ * operandToken - the token of the operand
+ * whatOperand - witch operand is it, source or destiny
+ * externReferenceHead - a linked list of every extern reference as an operand
+ *
+ * return:
+ * int - if there is an error in the operand or not
+ *
+ * */
+int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand, externReferencePtr *externReferenceHead) {
     int success = SUCCESS;
 
     switch (operandAddressingMode) {
@@ -77,11 +121,11 @@ int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperan
             break;
 
         case DIRECT_ADDRESSING:
-            success = handleDirectAddressing(operandToken);
+            success = handleDirectAddressing(operandToken, externReferenceHead);
             break;
 
         case STRUCT_ACCESS_ADRESSING:
-            success = handleStructAddressing(operandToken);
+            success = handleStructAddressing(operandToken, externReferenceHead);
             break;
 
         case REGISTERS_ADDRESSING:
@@ -139,7 +183,7 @@ int handleRegisterAddressing(tokenPtr operand, int whatOperand) {
  * int - if the function failed or succeeded
  *
  * */
-int handleStructAddressing(tokenPtr operand) {
+int handleStructAddressing(tokenPtr operand, externReferencePtr *externReferenceHead) {
     int fieldNum;
     int i;
     labelPtr structLabel;
@@ -166,7 +210,7 @@ int handleStructAddressing(tokenPtr operand) {
         fprintf(stderr, "ERROR: the label %s isn't a struct label\n", structLabel->name);
         return FAIL;
     }
-    addAddressToActionMemoryBase(structLabel); /*add the label address to the memory*/
+    addAddressToActionMemoryBase(structLabel, externReferenceHead); /*add the label address to the memory*/
     addNumberToActionMemoryBase(fieldNum); /*followed by the filed's number*/
     return SUCCESS;
 }
@@ -191,7 +235,7 @@ int handleStructAddressing(tokenPtr operand) {
  * int - if the function failed or succeeded
  *
  * */
-int handleDirectAddressing(tokenPtr operand) {
+int handleDirectAddressing(tokenPtr operand, externReferencePtr *externReferenceHead) {
     /*check if there is a label with the name of the operand string*/
     labelPtr operandLabel = checkLabelName(operand->string);
 
@@ -200,7 +244,7 @@ int handleDirectAddressing(tokenPtr operand) {
         return FAIL;
     }
     /*shift the address twice to the left for the code method bits*/
-    addAddressToActionMemoryBase(operandLabel);
+    addAddressToActionMemoryBase(operandLabel, externReferenceHead);
     return SUCCESS;
 }
 

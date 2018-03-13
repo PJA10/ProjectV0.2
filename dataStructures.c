@@ -253,3 +253,80 @@ commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, 
     new->tokenListHead = tokenListHead;
     return new;
 }
+
+
+
+/**
+ * freeCommandLineList
+ *
+ * This function gets a commandLine list head and frees it
+ *
+ * params:
+ * head - a pointer to the head of the commandLine list
+ *
+ * */
+void freeCommandLineList(commandLinePtr head) {
+    commandLinePtr curr = head;
+
+    if(head == NULL){ /*if we got an empty list*/
+        /*so we have no memory to free*/
+        return;
+    }
+    /*run over the list*/
+    while(curr) {
+        curr = head->next;
+        freeTokenList(head->tokenListHead); /*free the line token list*/
+        free(head);
+        head = curr;
+    }
+}
+
+
+/**********END COMMAND_LINE**********/
+/**********EXTERN_REFERENCE**********/
+
+
+/**
+ * */
+void addExternReference(externReferencePtr *externReferenceHead, char *name, int address) {
+    externReferencePtr curr = *externReferenceHead;
+    externReferencePtr new = (externReferencePtr) calloc(1, sizeof(externReference));
+    checkFail(new);
+    strcpy(new->name, name);
+    new->address = address;
+    new->next = NULL;
+
+    if(curr == NULL) {
+        *externReferenceHead = new;
+        return;
+    }
+    while(curr->next) {
+        curr = curr->next;
+    }
+    curr->next = new;
+}
+
+
+/**
+ * freeExternReferenceList
+ *
+ * This function gets a externReference list head and frees it
+ *
+ * params:
+ * head - a pointer to the head of the externReference list
+ *
+ * */
+void freeExternReferenceList(externReferencePtr head) {
+    externReferencePtr curr = head;
+
+    if(head == NULL){ /*if we got an empty list*/
+        /*so we have no memory to free*/
+        return;
+    }
+    /*run over the list*/
+    while(curr) {
+        curr = head->next;
+        free(head);
+        head = curr;
+    }
+}
