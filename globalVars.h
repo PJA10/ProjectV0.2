@@ -14,6 +14,5 @@ extern int actionMemoryBase[];
 extern int dataMemoryBase[];
 extern const char *addressingModes[];
 extern const char base32[];
-extern FILE *psob;
 
 #endif
