@@ -67,12 +67,13 @@ void printLog(char *string) {
 tokenPtr splitToTokens(char *line) {
     int ch; /*a char to go over the line char by char*/
     int i = 0;
+    int inQuotationMarks = FALSE;
     tokenPtr head = NULL;
     tokenPtr tail = head; /*a tail so we wo'nt run the hole list every time we want to add a node*/
     char currString[MAX_LINE] = {0}; /*the currant string, all the chars since the last space oe comma*/
     ch = line[i++];
     while (ch != '\0') { /*loop over the line*/
-        if (ch == ',') { /*if the current char is a comma*/
+        if (ch == ',' && !inQuotationMarks) { /*if the current char is a comma*/
             splitIfNeeded(&head, &tail, currString); /*the comma will separate if needed*/
             /*even if there was a split and even if not, now we want to add a node with a comma*/
             addToken(&tail, ","); /*add a node with ","*/
@@ -81,13 +82,21 @@ tokenPtr splitToTokens(char *line) {
             } else {
                 tail = tail->next;
             }
-        } else if (isspace(ch)) { /*if the char is a white-char or ':'*/
+        } else if (isspace(ch) && !inQuotationMarks) { /*if the char is a white-char or ':'*/
             splitIfNeeded(&head, &tail, currString);
             /*we don't need to do nothing with a space after another space or a comma*/
         } else { /*when ch is everything else*/
             int len = strlen(currString);
             currString[len] = ch;
             currString[len + 1] = '\0';
+            if(ch == '\"') {
+                if(inQuotationMarks) {
+                    inQuotationMarks = FALSE;
+                }
+                else {
+                    inQuotationMarks = TRUE;
+                }
+            }
             if (ch == ':') {
                 splitIfNeeded(&head, &tail, currString);
             }
@@ -161,7 +170,7 @@ int checkIfHasValidLabel(tokenPtr head) {
         char labelName[MAX_LENGTH_OF_LABEL_NAME + 1]; /*1 for ':'*/
         strcpy(labelName, head->string);
         labelName[strlen(labelName) - 1] = '\0'; /*delete the ':'*/
-        if(checkIfValidLabelName(labelName) == FAIL)
+        if(checkIfValidLabelName(labelName, TRUE) == FAIL)
             return FAIL;
         else
 		    return TRUE;
@@ -183,31 +192,42 @@ int checkIfHasValidLabel(tokenPtr head) {
  * int - If the string is a valid name or not
  *
  * */
-int checkIfValidLabelName(char *labelName) {
+int checkIfValidLabelName(char *labelName, int toPrint) {
     int i;
     if(strlen(labelName) > MAX_LENGTH_OF_LABEL_NAME) {
-        fprintf(stderr, "ERROR: Label must be less then %d characters\n", MAX_LENGTH_OF_LABEL_NAME + 1); /*1 because we wright less*/
+        if(toPrint) {
+            fprintf(stderr, "ERROR: Label must be less then %d characters\n",
+                    MAX_LENGTH_OF_LABEL_NAME + 1); /*1 because we wright less*/
+        }
         return FAIL;
     }
     if(!isalpha(labelName[0])){
-        fprintf(stderr, "ERROR: Label must start with an alpha character\n");
+        if(toPrint) {
+            fprintf(stderr, "ERROR: Label must start with an alpha character\n");
+        }
         return FAIL;
     }
     for (i = 1; i < strlen(labelName); i++) {
         if (!isalnum(labelName[i])) { /*checks if there is a non alphanumeric character, which is illegal*/
-            fprintf(stderr, "ERROR: Label must contain only alphanumeric characters\n");
+            if(toPrint) {
+                fprintf(stderr, "ERROR: Label must contain only alphanumeric characters\n");
+            }
             return FAIL;
         }
     }
     for (i = 0; i < NUM_OF_COMMAND_TYPES; i++) { /* checks that the name of the label isn't a command*/
         if (!strcmp(labelName, commands[i].name)) {
-            fprintf(stderr, "ERROR: Label cant have the name of a command\n");
+            if(toPrint) {
+                fprintf(stderr, "ERROR: Label cant have the name of a command\n");
+            }
             return FAIL;
         }
     }
     for (i = 0; i < NUM_OF_REGISTERS; i++) {/* checks that the name of the label isn't a register */
         if (!strcmp(labelName, registers[i])) {
-            fprintf(stderr, "ERROR: Label cant have the name of a register\n");
+            if(toPrint) {
+                fprintf(stderr, "ERROR: Label cant have the name of a register\n");
+            }
             return FAIL;
         }
     }
@@ -288,7 +308,7 @@ int checkAddressingMode(tokenPtr operand) {
         if(isNumber(number)) {
             return IMMEDIATE_ADDRESSING;
         }
-        return FAIL;
+        return UNKNON_ADRESSING_MODE;
     }
     else{
         int i;
@@ -299,7 +319,7 @@ int checkAddressingMode(tokenPtr operand) {
         }
         if(operand->string[i] == '.'){ /*if we found a dot*/
             if((operand->string[i+1] != '1' && operand->string[i+1] != '2') || operand->string[i+2] != '\0') {/*checks for struct access addressing mode*/
-                return FAIL;
+                return UNKNON_ADRESSING_MODE;
             }
             return STRUCT_ACCESS_ADRESSING;
         }
@@ -309,7 +329,12 @@ int checkAddressingMode(tokenPtr operand) {
                     return REGISTERS_ADDRESSING;
                 }
             }
-            return DIRECT_ADDRESSING; /*otherwise the function uses direct addressing*/
+            if(checkIfValidLabelName(operand->string, FALSE) == SUCCESS) {
+                return DIRECT_ADDRESSING; /*otherwise the function uses direct addressing*/
+            }
+            else {
+                return UNKNON_ADRESSING_MODE;
+            }
         }
     }
 }
@@ -387,7 +412,7 @@ int analyzeGetArray(tokenPtr commandToken, int *numbersArray) {
                 return FAIL;
             }
             if(!strcmp(curr->string, ",") && curr->next == NULL) { /*if this is a comma and the last token in the list*/
-                fprintf(stderr, "ERROR: extraneous comma at end of commandToken\n"); /*then its not needed*/
+                fprintf(stderr, "ERROR: extraneous comma at end of line\n"); /*then its not needed*/
                 return FAIL;
             }
 

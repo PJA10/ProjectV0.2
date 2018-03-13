@@ -8,7 +8,7 @@
 #include "dataStructures.h"
 
 int secondPass(commandLinePtr, externReferencePtr *);
-int handleEntryCommand(commandLinePtr entryCommandLine);
+int handleSecondPassEntryCommand(commandLinePtr entryCommandLine);
 int handleStructAddressing(tokenPtr operand, externReferencePtr *externReferenceHead);
 int handleDirectAddressing(tokenPtr operand, externReferencePtr *externReferenceHead);
 int handleImmediateAddressing(tokenPtr operand);

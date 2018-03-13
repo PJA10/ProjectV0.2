@@ -31,7 +31,7 @@ int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *extern
         int success = SUCCESS;
         switch (curr->commandType) {
             case ENTRY:
-                success = handleEntryCommand(curr); /*if the current command is .entry*/
+                success = handleSecondPassEntryCommand(curr); /*if the current command is .entry*/
                 break;
 
             default: /*if the current command is an action*/
@@ -82,6 +82,10 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externRefer
     if(commandType <= TWO_OPERANDS || commandType == LEA) {
         curr = curr->next;
         success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE, externReferenceHead);
+
+        if(success == FAIL) {
+            return FAIL;
+        }
 
         if(sourceOperandAddressingModeCode == REGISTERS_ADDRESSING &&
            destinyOperandAddressingModeCode == REGISTERS_ADDRESSING) {
@@ -206,10 +210,6 @@ int handleStructAddressing(tokenPtr operand, externReferencePtr *externReference
     }
     free(labelName); /*we don't need labelName anymore*/
 
-    if(structLabel->type != STRUCT_LABEL) { /*if the label with the correct name isn't a struct label*/
-        fprintf(stderr, "ERROR: the label %s isn't a struct label\n", structLabel->name);
-        return FAIL;
-    }
     addAddressToActionMemoryBase(structLabel, externReferenceHead); /*add the label address to the memory*/
     addNumberToActionMemoryBase(fieldNum); /*followed by the filed's number*/
     return SUCCESS;
@@ -280,10 +280,10 @@ int handleImmediateAddressing(tokenPtr operand) {
 
 
 /**
- * handleEntryCommand
+ * handleSecondPassEntryCommand
  *
  * The function handle .entry command while in the second pass
- * The function will check that the command parameter is correct
+ * The function will search for the entry label
  * If it is the function will flag the entry label parameter as entry
  *
  * params:
@@ -293,7 +293,7 @@ int handleImmediateAddressing(tokenPtr operand) {
  * int - if the function failed or succeeded
  *
  * */
-int handleEntryCommand(commandLinePtr entryCommandLine) {
+int handleSecondPassEntryCommand(commandLinePtr entryCommandLine) {
     labelPtr label;
     tokenPtr currToken;
     tokenPtr commandToken = entryCommandLine->tokenListHead;
@@ -302,10 +302,6 @@ int handleEntryCommand(commandLinePtr entryCommandLine) {
     }
     currToken = commandToken;
     currToken = currToken->next;
-    if(currToken == NULL) { /*if te command is the end of the line*/
-        fprintf(stderr, "ERROR: expected label after .entry\n");
-        return FAIL;
-    }
     label = checkLabelName(currToken->string);
     if(label == NULL) { /*if there is no label with the given name*/
         fprintf(stderr, "ERROR: .entry parameter must be a existing label\n");
@@ -313,10 +309,6 @@ int handleEntryCommand(commandLinePtr entryCommandLine) {
     }
     if(label->type == EXTERN_LABEL) { /*if the given label is an extern label*/
         fprintf(stderr, "ERROR: .entry label cant be an extern label\n");
-        return FAIL;
-    }
-    if(currToken->next != NULL) { /*if the parameter isn't the end of the line*/
-        fprintf(stderr, "ERROR: expected end of line after first parameter of .entry\n");
         return FAIL;
     }
     label->hasEntry = TRUE;

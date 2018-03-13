@@ -12,7 +12,6 @@
 #include <string.h>
 #include "constants.h"
 
-/*enum errorType {NOT_ENOUGH_ARGS};*/
 
 void resetProgram();
 void freeGlobal();

@@ -26,7 +26,7 @@ int analyzeGetArray(tokenPtr, int *);
 int getCommandType(tokenPtr);
 int checkStringToken(tokenPtr);
 void storeString(char *string);
-int checkIfValidLabelName(char *labelName);
+int checkIfValidLabelName(char *labelName, int toPrint);
 labelPtr checkLabelName(char *name);
 void addNumberToDataMemoryBase(int newNumber);
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode);

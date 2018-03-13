@@ -12,7 +12,7 @@ int handleDataCommands(tokenPtr, int, int);
 int handleDotData(tokenPtr);
 int handleDotString(tokenPtr commandToken);
 int handleDotStruct(tokenPtr commandToken);
-int handleExternCommand(tokenPtr, int, int);
+int handleExternCommand(tokenPtr, int);
 int handleActionCommands(commandLinePtr);
-
+int handleEntryCommand(commandLinePtr);
 #endif
