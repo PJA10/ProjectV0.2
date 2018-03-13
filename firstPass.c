@@ -91,12 +91,18 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
 
                 case ENTRY:
                     currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head);
-                    addCommandLine(secondPassCommandsHead, currLineCommandLine);
-                    needToFree = FALSE;
+                    success = handleEntryCommand(currLineCommandLine);
+                    if(success == FAIL || success == TRUE || isErrorsFlag) { /*if there has been an error or the entry label is all ready set*/
+                        free(currLineCommandLine);
+                    }
+                    else {
+                        needToFree = FALSE;
+                        addCommandLine(secondPassCommandsHead, currLineCommandLine);
+                    }
                     break;
 
                 case EXTERN:
-                    success = handleExternCommand(head, hasLabel, commandType);
+                    success = handleExternCommand(head, hasLabel);
                     break;
 
                 case UNKNOWN:
@@ -106,7 +112,7 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
                 default:
                     currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head);
                     success = handleActionCommands(currLineCommandLine);
-                    if(success == FAIL) {
+                    if(success == FAIL || isErrorsFlag) {
                         free(currLineCommandLine);
                     }
                     else {
@@ -149,7 +155,6 @@ int handleDataCommands(tokenPtr head, int hasLabel, int commandType) {
     tokenPtr commandToken = head;
     int success = SUCCESS, i;
     if(hasLabel) {
-        int labelType = DATA_LABEL;
         labelPtr newLabel = (labelPtr) calloc(sizeof(label), 1);
         char *name = (char *) calloc(sizeof(char), MAX_LENGTH_OF_LABEL_NAME + 2); /*1 for ':' and 1 for '\0' at the end*/
         checkFail(newLabel);
@@ -160,10 +165,8 @@ int handleDataCommands(tokenPtr head, int hasLabel, int commandType) {
         strcpy(name, head->string);
         name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
 
-        if(commandType == STRUCT) {
-            labelType = STRUCT_LABEL;
-        }
-        setLabel(newLabel, name, DC, labelType, FALSE);
+
+        setLabel(newLabel, name, DC, DATA_LABEL, FALSE);
         if(addLabel(&labelTabale, newLabel) == FAIL)
             return FAIL;
     }
@@ -321,11 +324,12 @@ int handleDotStruct(tokenPtr commandToken) {
  * int - if the function failed or succeeded
  *
  * */
-int handleExternCommand(tokenPtr head, int hasLabel, int commandType) {
+int handleExternCommand(tokenPtr head, int hasLabel ) {
     /*we use else for the new block to declare vars*/
     tokenPtr commandToken = head;
     tokenPtr curr;
     labelPtr newLabel;
+    labelPtr existsLabel;
     char *name;
     if (hasLabel) {
         commandToken = commandToken->next; /*if there are a label then the command token is second in the line*/
@@ -336,13 +340,19 @@ int handleExternCommand(tokenPtr head, int hasLabel, int commandType) {
         fprintf(stderr, "ERROR: expected after .extern a label name\n");
         return FAIL;
     }
-    if(checkIfValidLabelName(curr->string) == FAIL) {
+    if(checkIfValidLabelName(curr->string, TRUE) == FAIL) {
         return FAIL;
     }
     if(curr->next != NULL) {
         fprintf(stderr, "ERROR: expected end of line after %s\n", curr->string);
         return FAIL;
     }
+    existsLabel = checkLabelName(curr->string);
+    if(existsLabel!= NULL && existsLabel->type == EXTERN) { /*if the label had all ready been extern*/
+        return SUCCESS; /*it is ok to declare the same external more than once*/
+    }
+
+
     newLabel = (labelPtr) calloc(sizeof(label), 1);
     name = (char *) calloc(sizeof(char), MAX_LENGTH_OF_LABEL_NAME + 1); /*1 for '\0' at the end*/
     checkFail(newLabel);
@@ -350,8 +360,11 @@ int handleExternCommand(tokenPtr head, int hasLabel, int commandType) {
     /*set new and add it to the list*/
     strcpy(name, curr->string);
     setLabel(newLabel, name, 0, EXTERN_LABEL, FALSE);
-    if(addLabel(&labelTabale, newLabel) == FAIL)
+    if(addLabel(&labelTabale, newLabel) == FAIL) {
+        free(name);
+        free(newLabel);
         return FAIL;
+    }
     return SUCCESS;
 }
 
@@ -475,3 +488,48 @@ int handleActionCommands(commandLinePtr actionCommandLine){
     return SUCCESS; /* if we are here, there are no errors*/
 }
 
+
+/**
+ * handleEntryCommand
+ *
+ * The function handle .entry command while in the first pass
+ * The function will check that the command have one parameter
+ * The function will check that there haven't been an external label with the same name
+ * If the label have been all ready has been set the function will flag it
+ * The function will return if it found the label or nor, and FAIL for error
+ *
+ * params:
+ * entryCommandLine - The commandLine struct of the .entry line
+ *
+ * return:
+ * int - if the function failed, found the label or not
+ *
+ * */
+int handleEntryCommand(commandLinePtr entryCommandLine) {
+    labelPtr label;
+    tokenPtr currToken;
+    tokenPtr commandToken = entryCommandLine->tokenListHead;
+    if(entryCommandLine->hasLabel == TRUE) {
+        commandToken = commandToken->next; /*if there is a label then the command is the second token and not the first*/
+    }
+    currToken = commandToken;
+    currToken = currToken->next;
+    if(currToken == NULL) { /*if te command is the end of the line*/
+        fprintf(stderr, "ERROR: expected label after .entry\n");
+        return FAIL;
+    }
+    if(currToken->next != NULL) { /*if the parameter isn't the end of the line*/
+        fprintf(stderr, "ERROR: expected end of line after first parameter of .entry\n");
+        return FAIL;
+    }
+    label = checkLabelName(currToken->string);
+    if(label != NULL ) {
+        if (label->type == EXTERN_LABEL) { /*if the given label is an extern label*/
+            fprintf(stderr, "ERROR: .entry label cant be an extern label\n");
+            return FAIL;
+        }
+        label->hasEntry = TRUE;
+        return TRUE;
+    }
+    return FALSE;
+}

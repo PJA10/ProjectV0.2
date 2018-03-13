@@ -27,7 +27,7 @@ const command commands[NUM_OF_COMMAND_TYPES + 1] = { /*a array to store all the 
         {"sub",     SUB, {IMMEDIATE_ADDRESSING,DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
         {"not",     NOT, {END_OF_ADDRESSING_LIST} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
         {"clr",     CLR, {END_OF_ADDRESSING_LIST} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
-        {"lea",     LEA, {DIRECT_ADDRESSING,DIRECT_ADDRESSING} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
+        {"lea",     LEA, {DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING, END_OF_ADDRESSING_LIST} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
         {"inc",     INC, {END_OF_ADDRESSING_LIST} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
         {"dec",     DEC, {END_OF_ADDRESSING_LIST} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
         {"jmp",     JMP, {END_OF_ADDRESSING_LIST} ,{DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING,END_OF_ADDRESSING_LIST}},
@@ -40,7 +40,7 @@ const command commands[NUM_OF_COMMAND_TYPES + 1] = { /*a array to store all the 
         {"unknown", UNKNOWN}
 };
 const char *registers[] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
-const char *addressingModes[] = {"immediate addressing", "direct addressing", "struct access addressing", "registers addressing"};
+const char *addressingModes[] = {"immediate addressing", "direct addressing", "struct access addressing", "registers addressing", "unknown addressing mode"};
 const char base32[] = {'!','@','#','$','%','^','&','*','<','>','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v'};
 int actionMemoryBase[MAX_MEMORY_LENGTH];
 int dataMemoryBase[MAX_MEMORY_LENGTH];
