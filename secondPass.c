@@ -39,12 +39,12 @@ int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *extern
                 break;
         }
         if(success == FAIL) { /*if there was an error in the command*/
-            fprintf(stderr, "in line number: %d\n", curr->lineNumber);
             isErrorsFlag = TRUE;
         }
         curr = curr->next;
     }
     if(isErrorsFlag) {
+        fprintf(stderr, "in line number: %d\n the line is: %s", curr->lineNumber, secondPassCommandsHead->lineInString);
         return FAIL;
     }
     return SUCCESS;
