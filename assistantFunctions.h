@@ -20,7 +20,7 @@ void printLog(char *);
 int checkIfHasValidLabel(tokenPtr);
 int isNumber(char *toCheck);
 int checkIfValidAddressingMode(int addressingMode, const int validAddressingModes[]);
-int checkAddressingMode(tokenPtr operand);
+int getAddressingMode(tokenPtr operand);
 int checkIfHasValidLabel(tokenPtr);
 int analyzeGetArray(tokenPtr, int *);
 int getCommandType(tokenPtr);
@@ -36,9 +36,10 @@ void printMemoryBase(int *memoryBase);
 void addNumberToActionMemoryBase(int number);
 void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferenceHead);
 void intToBase32(char *,int num);
-
-
-
+int handleOperand(commandLinePtr actionCommandLine, tokenPtr operandToken, int whatOperand);
+int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandToken);
+int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand);
+int handleLabel(char *labelName, int address, int labelType);
 
 
 #endif

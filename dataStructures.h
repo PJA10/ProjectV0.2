@@ -42,8 +42,8 @@ void setLabel(labelPtr, char *, int, int, int);
 typedef struct Command{
     char *name;
     int id;
-    int sourceOperandValidAddressingModes[4];
-    int destinyOperandValidAddressingModes[4];
+    int sourceOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
+    int destinyOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
 }command;
 
 /*command line*/
@@ -60,7 +60,7 @@ typedef struct CommandLine{
 }commandLine;
 
 void addCommandLine(commandLinePtr *head, commandLinePtr new);
-commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode, int destinyOperandAddressingMode, tokenPtr tokenListHead);
+commandLinePtr setNewCommandLine(int , int , int , int , int , tokenPtr , char *);
 void freeCommandLineList(commandLinePtr head);
 
 

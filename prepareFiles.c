@@ -27,9 +27,27 @@ void prepareFiles(char *inputFileName, externReferencePtr externReferencesHead){
     if(createOutputFiles(&objFile, &externFile, &entryFile, inputFileName) == FAIL) { /*create the files*/
         return;
     }
+
     makeObjFile(objFile);
-    makeEntryFile(entryFile);
-    makeExternFile(externFile, externReferencesHead);
+    fclose(objFile);
+
+    if(makeEntryFile(entryFile) == FALSE) {
+        char *fileName = concat(inputFileName, ".ent");
+        remove(fileName);
+        free(fileName);
+    }
+    else {
+        fclose(entryFile);
+    }
+
+    if(makeExternFile(externFile, externReferencesHead) == FALSE) {
+        char *fileName = concat(inputFileName, ".ext");
+        remove(fileName);
+        free(fileName);
+    }
+    else {
+        fclose(externFile);
+    }
 }
 
 
@@ -45,14 +63,18 @@ void prepareFiles(char *inputFileName, externReferencePtr externReferencesHead){
  * externReferencesHead - a linked list of every external label reference
  *
  * */
-void makeExternFile(FILE *externFile, externReferencePtr externReferencesHead) {
+int makeExternFile(FILE *externFile, externReferencePtr externReferencesHead) {
     externReferencePtr curr = externReferencesHead;
+    if(externReferencesHead == NULL) {
+        return FALSE;
+    }
     while(curr) { /*run over the list*/
         /*and print the extern label name followed by the an address with this label*/
         fprintf(externFile, "%s\t", curr->name);
         printToFile(externFile, curr->address, "\n");
         curr = curr->next;
     }
+    return TRUE;
 }
 
 
@@ -81,7 +103,7 @@ void makeObjFile(FILE *objFile) {
     for(i = 0; i < DC; i++) { /*for every data memory word we have written*/
         printToFile(objFile, i + IC, "\t"); /*print the address and tab*/
         /*i + IC because we want the data memory to be right after the action memory*/
-        printToFile(objFile, actionMemoryBase[i], "\n"); /*print the machine code in this address*/
+        printToFile(objFile, dataMemoryBase[i], "\n"); /*print the machine code in this address*/
     }
 }
 
@@ -97,15 +119,18 @@ void makeObjFile(FILE *objFile) {
  * entryFile - the file we want to print to
  *
  * */
-void makeEntryFile(FILE *entryFile) {
+int makeEntryFile(FILE *entryFile) {
     labelPtr curr = labelTabale;
+    int wroteSomething = FALSE;
     while(curr) { /*for every label*/
         if(curr->hasEntry) { /*if the label have an .entry command*/
             fprintf(entryFile, "%s\t", curr->name); /*print the label name*/
             printToFile(entryFile, curr->address, "\n"); /*print the label address*/
+            wroteSomething = TRUE;
         }
         curr = curr->next;
     }
+    return wroteSomething;
 }
 
 
@@ -190,4 +215,37 @@ void printToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint) {
     char base32String[3] = {0};
     intToBase32(base32String, numberTocConvert);
     fprintf(toPrintFile, "%s%s", base32String, stringToPrint);
+}
+
+
+/**
+ * readLineFromFile
+ *
+ * This function read from a file a line
+ * The function will insert the line into a given string
+ * If the file line is too long the function will return FAIL
+ *
+ * params:
+ * file - the file to read from
+ * buff - the string to insert the line to
+ *
+ * return:
+ * int - if the line is valid or to long*/
+int readLineFromFile(FILE *file, char buff[MAX_LINE+1]) {
+    int ch;
+    int counter = 0;
+    ch = fgetc(file);
+    while(ch != '\n') {
+        if(counter < MAX_LINE) {
+            buff[counter] = ch;
+        }
+        ch = fgetc(file);
+        counter++;
+    }
+    if(counter > MAX_LINE + 1) {
+        fprintf(stderr, "ERROR: line is to long, the maximum of a line is:%s\n", MAX_LINE);
+        return FAIL;
+    }
+    buff[counter] = '\0';
+    return SUCCESS;
 }
