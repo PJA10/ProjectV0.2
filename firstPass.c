@@ -47,6 +47,7 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
         lineNumber++;
         head = splitToTokens(buff);
         curr = head;
+        strcpy(currLineCommandLine->lineInString,buff);
         printLog("\nline:\n");
         printLog(buff);
         printLog("the line token list is:\n");

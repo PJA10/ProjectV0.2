@@ -55,6 +55,7 @@ typedef struct CommandLine{
     int sourceOperandAddressingMode;
     int destinyOperandAddressingMode;
     tokenPtr tokenListHead;
+    char lineInString[MAX_LINE+1];
     commandLinePtr next;
 }commandLine;
 
