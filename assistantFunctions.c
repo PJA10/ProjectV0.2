@@ -234,6 +234,7 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
     return SUCCESS;
 }
 
+
 /**
  * isNumber
  *
@@ -339,6 +340,7 @@ int checkAddressingMode(tokenPtr operand) {
     }
 }
 
+
 /**
  * checkIfValidAddressingMode
  *
@@ -365,6 +367,7 @@ int checkIfValidAddressingMode(int addressingMode, const int *validAddressingMod
     }
     return FAIL;
 }
+
 
 /**
  * analyzeGetArray
@@ -577,6 +580,7 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
     }
     return sum;
 }
+
 
 /**
  * codeActionCommand
