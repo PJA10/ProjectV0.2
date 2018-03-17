@@ -215,8 +215,8 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
             return FAIL;
         }
     }
-    for (i = 0; i < NUM_OF_COMMAND_TYPES; i++) { /* checks that the name of the label isn't a command*/
-        if (!strcmp(labelName, commands[i].name)) {
+    for (i = 0; i < NUM_OF_ACTION_COMMANDS; i++) { /* checks that the name of the label isn't a command*/
+        if (!strcmp(labelName, actionCommandsArray[i].name)) {
             if(toPrint) {
                 fprintf(stderr, "ERROR: Label cant have the name of a command\n");
             }
@@ -309,7 +309,7 @@ int getAddressingMode(tokenPtr operand) {
         if(isNumber(number)) {
             return IMMEDIATE_ADDRESSING;
         }
-        return UNKNON_ADRESSING_MODE;
+        return UNKNOWN_ADDRESSING_MODE;
     }
     else{
         int i;
@@ -320,7 +320,7 @@ int getAddressingMode(tokenPtr operand) {
         }
         if(operand->string[i] == '.'){ /*if we found a dot*/
             if((operand->string[i+1] != '1' && operand->string[i+1] != '2') || operand->string[i+2] != '\0') {/*checks for struct access addressing mode*/
-                return UNKNON_ADRESSING_MODE;
+                return UNKNOWN_ADDRESSING_MODE;
             }
             return STRUCT_ACCESS_ADRESSING;
         }
@@ -334,7 +334,7 @@ int getAddressingMode(tokenPtr operand) {
                 return DIRECT_ADDRESSING; /*otherwise the function uses direct addressing*/
             }
             else {
-                return UNKNON_ADRESSING_MODE;
+                return UNKNOWN_ADDRESSING_MODE;
             }
         }
     }
@@ -446,10 +446,25 @@ int analyzeGetArray(tokenPtr commandToken, int *numbersArray) {
 */
 int getCommandType(tokenPtr token) {
     int i;
-    for(i = 0; i<NUM_OF_COMMAND_TYPES; i++) { /*run over commands*/
-        if(!strcmp(token->string, commands[i].name)) { /*if the token string equals the command name*/
-            return commands[i].id;
+    for(i = 0; i<NUM_OF_ACTION_COMMANDS; i++) { /*run over commands*/
+        if(!strcmp(token->string, actionCommandsArray[i].name)) { /*if the token string equals the command name*/
+            return actionCommandsArray[i].id;
         }
+    }
+    if(!strcmp(token->string, ".data")) {
+        return DATA;
+    }
+    if(!strcmp(token->string, ".string")) {
+        return STRING;
+    }
+    if(!strcmp(token->string, ".struct")) {
+        return STRUCT;
+    }
+    if(!strcmp(token->string, ".extern")) {
+        return EXTERN;
+    }
+    if(!strcmp(token->string, ".entry")) {
+        return ENTRY;
     }
     return UNKNOWN;
 }
@@ -594,14 +609,15 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
  * */
 void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType) {
     int codedActionCommand;
+    int opCode = actionCommandsArray[commandType].opCode;
     if(destinyOperandAddressingMode != NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND) {
-        codedActionCommand = commandType << 6 | destinyOperandAddressingMode << 2;
+        codedActionCommand = opCode << 6 | destinyOperandAddressingMode << 2;
     }
     else if (destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND){
-        codedActionCommand = commandType << 6;
+        codedActionCommand = opCode << 6;
     }
     else{
-        codedActionCommand = commandType << 6 | sourceOperandAddressingMode << 4 | destinyOperandAddressingMode << 2;
+        codedActionCommand = opCode << 6 | sourceOperandAddressingMode << 4 | destinyOperandAddressingMode << 2;
     }
     actionMemoryBase[IC - MEMORY_START_POS] = codedActionCommand;
     IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
@@ -744,7 +760,7 @@ int handleOperand(commandLinePtr actionCommandLine, tokenPtr operandToken, int w
     }
 
     if(operandToken == NULL) { /*checks if there is an operand at all*/
-        fprintf(stderr, "ERROR: the Command %s requires a %s operand\n", commands[commandType].name, operandName);
+        fprintf(stderr, "ERROR: the Command %s requires a %s operand\n", actionCommandsArray[commandType].name, operandName);
         return FAIL;
     }
     if(whatOperand == DESTINY) { /*if this is a destiny operand*/
@@ -789,7 +805,7 @@ int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandTok
 
     commaToken = firstOperandToken->next; /*between the two operand suppose to be a comma*/
     if(commaToken == NULL) { /*checks if the there is nothing after the first operand*/
-        fprintf(stderr, "ERROR: the Command %s requires two operands\n", commands[commandType].name);
+        fprintf(stderr, "ERROR: the Command %s requires two operands\n", actionCommandsArray[commandType].name);
         return FAIL;
     }
     if(strcmp(commaToken->string, ",")) { /*checks if there is a comma*/
@@ -829,10 +845,10 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
     char operandNumberString[8];
 
     if (whatOperand == SOURCE) { /*if this is an source operand*/
-        validAddressingModes = commands[commandType].sourceOperandValidAddressingModes;
+        validAddressingModes = actionCommandsArray[commandType].sourceOperandValidAddressingModes;
         strcpy(operandNumberString, "source");
     } else { /*if this is an destiny operand*/
-        validAddressingModes = commands[commandType].destinyOperandValidAddressingModes;
+        validAddressingModes = actionCommandsArray[commandType].destinyOperandValidAddressingModes;
         strcpy(operandNumberString, "destiny");
     }
 
@@ -841,7 +857,7 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
     /*check if the operan's addressing mode fits the command type*/
     isValid = checkIfValidAddressingMode(operandAddressingMode, validAddressingModes);
     if (isValid == FAIL) { /*if the addressing mode is'nt valid*/
-        fprintf(stderr, "ERROR: the command %s doesnt accept %s for the %s operand\n", commands[commandType].name,
+        fprintf(stderr, "ERROR: the command %s doesnt accept %s for the %s operand\n", actionCommandsArray[commandType].name,
                 addressingModes[operandAddressingMode], operandNumberString);
         return FAIL;
     }
@@ -868,19 +884,21 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
  * */
 int handleLabel(char *labelName, int address, int labelType) {
     labelPtr newLabel = (labelPtr) calloc(1, sizeof(label));
-    char *name = (char *) calloc( MAX_LENGTH_OF_LABEL_NAME + 2, sizeof(char)); /*1 for ':' and 1 for '\0' at the end*/
+    char *name = (char *) calloc(MAX_LENGTH_OF_LABEL_NAME + 2, sizeof(char)); /*1 for ':' and 1 for '\0' at the end*/
     checkFail(newLabel);
     checkFail(name);
     /*if there is a label then the second token should be the command*/
     /*set new and add it to the list*/
     strcpy(name, labelName);
-    name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
+    name[strlen(name) - 1] = '\0'; /*delete the ':' at the end of the name*/
     setLabel(newLabel, name, address, labelType, FALSE);
-    if(addLabel(&labelTable, newLabel) == FAIL) {
+    if (addLabel(&labelTable, newLabel) == FAIL) {
         free(name);
         free(newLabel);
-
-
+        return FAIL;
+    }
+    return SUCCESS;
+}
 
 /**
  * handleNotCommandLines
@@ -890,7 +908,12 @@ int handleLabel(char *labelName, int address, int labelType) {
  * and FALSE else
  *
  * params:
- * head - a pointer to the head of the token linked */
+ * head - a pointer to the head of the token linked
+ *
+ * return:
+ * int - if this line is not a command line
+ *
+ * */
 int handleNotCommandLines(tokenPtr head) {
     if(head == NULL) {
         printLog("the line is empty\n");

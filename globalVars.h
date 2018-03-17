@@ -8,7 +8,7 @@ extern int IC;
 extern int DC;
 extern int logIsOn;
 extern labelPtr labelTable;
-extern const command commands[];
+extern const commandInfo actionCommandsArray[];
 extern const char *registers[];
 extern int actionMemoryBase[];
 extern int dataMemoryBase[];
