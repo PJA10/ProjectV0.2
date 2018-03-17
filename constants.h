@@ -16,8 +16,8 @@
 #define NUM_OF_REGISTERS 8
 #define MAX_LENGTH_OF_LABEL_NAME 30
 #define MAX_MEMORY_LENGTH 256
-#define TWO_OPERANDS LEA
-#define ONE_OPERAND JSR
+#define TWO_OPERANDS LEA /*the last action command with two operands in the actionCommandsArray*/
+#define ONE_OPERAND JSR /*the last action command with one operand in the actionCommandsArray*/
 #define IMMEDIATE_ADDRESSING 0
 #define DIRECT_ADDRESSING 1
 #define STRUCT_ACCESS_ADRESSING 2
