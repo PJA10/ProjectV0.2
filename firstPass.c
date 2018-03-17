@@ -40,7 +40,7 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
     int success = SUCCESS;
 
     success = readLine(file, buff);/*get the first line*/
-    if(success == -1){
+    if(success == FAIL){
         fprintf(stderr, "line %d size is bigger than %d chars",lineNumber, MAX_LINE);
         return FAIL;
     }
@@ -136,7 +136,7 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
             }
         }
         success = readLine(file, buff);/*get the next line*/
-        if(success == -1){
+        if(success == FAIL){
             fprintf(stderr, "line %d size is bigger than %d chars",lineNumber, MAX_LINE);
             return FAIL;
         }

@@ -708,3 +708,14 @@ void intToBase32(char *output, int num) {
     base32String[2] = '\0';
     strcpy(output, base32String);
 }
+
+
+int readLine(FILE *file, char *buff) {
+    char temp[MAX_LINE+1];
+    fgets(temp, MAX_LINE, file); /*get the next line*/
+    strncpy(buff,temp,MAX_LINE);
+    if(strcmp(buff,temp)){
+        return FAIL;
+    }
+    return SUCCESS;
+}

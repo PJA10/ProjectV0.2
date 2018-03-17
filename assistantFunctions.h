@@ -36,6 +36,7 @@ void printMemoryBase(int *memoryBase);
 void addNumberToActionMemoryBase(int number);
 void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferenceHead);
 void intToBase32(char *,int num);
+int readLine(FILE* file, char buff[]);
 
 
 
