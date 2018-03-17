@@ -11,14 +11,16 @@
 #define MEMORY_START_POS 100 /*the assignment instructions are listed as such*/
 #define FIRST_ELEMENT 0
 #define NUM_OF_COMMAND_TYPES 21
+#define NUM_OF_DATA_COMMAND_TYPES 5
+#define NUM_OF_ACTION_COMMAND_TYPES 16
 #define SUCCESS 1
 #define TRUE 1
 #define FALSE 0
 #define NUM_OF_REGISTERS 8
 #define MAX_LENGTH_OF_LABEL_NAME 30
 #define MAX_MEMORY_LENGTH 256
-#define TWO_OPERANDS SUB
-#define ONE_OPERAND JSR
+#define TWO_OPERANDS SUB+5
+#define ONE_OPERAND JSR+5
 #define IMMEDIATE_ADDRESSING 0
 #define DIRECT_ADDRESSING 1
 #define STRUCT_ACCESS_ADRESSING 2
@@ -45,8 +47,7 @@
 
 enum {ACTION_LABEL, EXTERN_LABEL, DATA_LABEL};
 
-enum {DATA, STRING, STRUCT, EXTERN, ENTRY, /*data commands*/
-    MOV, CMP, ADD, SUB, NOT, CLR, LEA, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP, /*action commands*/
-    UNKNOWN}; /*others*/
-
+enum {DATA, STRING, STRUCT, EXTERN, ENTRY}; /*data commands*/
+enum {MOV, CMP, ADD, SUB, LEA, NOT, CLR, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP, UNKNOWN};/*action commands*/
+enum {MOV_CODE, CMP_CODE, ADD_CODE, SUB_CODE, NOT_CODE, CLR_CODE, LEA_CODE, INC_CODE, DEC_CODE, JMP_CODE, BNE_CODE, RED_CODE, PRN_CODE, JSR_CODE, RTS_CODE, STOP_CODE, UNKNOWN_CODE};/*action commands*/
 #endif

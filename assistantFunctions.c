@@ -215,8 +215,8 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
             return FAIL;
         }
     }
-    for (i = 0; i < NUM_OF_COMMAND_TYPES; i++) { /* checks that the name of the label isn't a command*/
-        if (!strcmp(labelName, commands[i].name)) {
+    for (i = 0; i < NUM_OF_ACTION_COMMAND_TYPES; i++) { /* checks that the name of the label isn't a command*/
+        if (!strcmp(labelName, actionCommands[i].name)) {
             if(toPrint) {
                 fprintf(stderr, "ERROR: Label cant have the name of a command\n");
             }
@@ -446,9 +446,9 @@ int analyzeGetArray(tokenPtr commandToken, int *numbersArray) {
 */
 int getCommandType(tokenPtr token) {
     int i;
-    for(i = 0; i<NUM_OF_COMMAND_TYPES; i++) { /*run over commands*/
-        if(!strcmp(token->string, commands[i].name)) { /*if the token string equals the command name*/
-            return commands[i].id;
+    for(i = 0; i<NUM_OF_ACTION_COMMAND_TYPES; i++) { /*run over commands*/
+        if(!strcmp(token->string,commands[i].name)){
+            return i;
         }
     }
     return UNKNOWN;
@@ -469,11 +469,11 @@ int getCommandType(tokenPtr token) {
  *
  * */
 int checkStringToken(tokenPtr token) {
-    if(!token) {
+    if(!token) { /*i the token is NULL*/
         fprintf(stderr, "ERROR: expected string\n");
         return FAIL;
     }
-    if(token->string[0] != '\"' || token->string[strlen(token->string)-1] != '\"') {
+    if(token->string[0] != '\"' || token->string[strlen(token->string)-1] != '\"') { /*if the string starts or ends with " */
         fprintf(stderr, "ERROR: string parameter is a string that starts and end with \", |%s| is not a valid string\n", token->string);
         return FAIL;
     }

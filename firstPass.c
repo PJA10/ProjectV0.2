@@ -413,7 +413,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
             return FAIL;
     }
 
-    if(commandType <= TWO_OPERANDS || commandType == LEA){ /*checks if the command requires two operand*/
+    if(commandType <= TWO_OPERANDS){ /*checks if the command requires two operand*/
         int sourceOperandAddressingMode;
         int destinyOperandAddressingMode;
         int isValid;
@@ -449,14 +449,14 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         }
 
         sourceOperandAddressingMode = checkAddressingMode(firstOperandToken);
-        isValid = checkIfValidAddressingMode(sourceOperandAddressingMode ,commands[commandType].sourceOperandValidAddressingModes);
+        isValid = checkIfValidAddressingMode(sourceOperandAddressingMode ,actionCommands[commandType-FIRST_COMMAND_ID].sourceOperandValidAddressingModes);
         if(isValid == FAIL){ /* checks if the addressing mode of the first operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the first operand\n", commands[commandType].name, addressingModes[sourceOperandAddressingMode]);
             return FAIL;
         }
 
         destinyOperandAddressingMode = checkAddressingMode(secondOperandToken);
-        isValid = checkIfValidAddressingMode(destinyOperandAddressingMode, commands[commandType].destinyOperandValidAddressingModes);
+        isValid = checkIfValidAddressingMode(destinyOperandAddressingMode, actionCommands[commandType-FIRST_COMMAND_ID].destinyOperandValidAddressingModes);
         if(isValid == FAIL){ /*checks if the addressing mode of the second operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the second operand\n", commands[commandType].name, addressingModes[destinyOperandAddressingMode]);
             return FAIL;
@@ -466,7 +466,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         actionCommandLine->sourceOperandAddressingMode = sourceOperandAddressingMode;
         actionCommandLine->destinyOperandAddressingMode = destinyOperandAddressingMode;
     }
-    else if(commandType<=ONE_OPERAND && commandType!=LEA){ /*checks if the command requires one operand*/
+    else if(commandType<=ONE_OPERAND){ /*checks if the command requires one operand*/
         int destinyOperandAddressingMode;
         int isValid;
         tokenPtr firstOperandToken = commandToken->next; /*after the command suppose to be the first operand*/
@@ -480,7 +480,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
             return FAIL;
         }
         destinyOperandAddressingMode = checkAddressingMode(firstOperandToken);
-        isValid = checkIfValidAddressingMode(destinyOperandAddressingMode ,commands[commandType].destinyOperandValidAddressingModes);
+        isValid = checkIfValidAddressingMode(destinyOperandAddressingMode ,actionCommands[commandType-FIRST_COMMAND_ID].destinyOperandValidAddressingModes);
         if(isValid == FAIL){ /*checks if the addressing mode of the only operand is valid*/
             fprintf(stderr, "ERROR: the command %s doesnt accept %s for the operand\n", commands[commandType].name, addressingModes[destinyOperandAddressingMode]);
             return FAIL;

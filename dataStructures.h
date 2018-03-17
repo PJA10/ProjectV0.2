@@ -39,11 +39,22 @@ void setLabel(labelPtr, char *, int, int, int);
 
 
 /*commands*/
+typedef struct ActionCommand{
+    char *name;
+    int id;
+    int commandCode;
+    int sourceOperandValidAddressingModes[4];
+    int destinyOperandValidAddressingModes[4];
+}actionCommand;
+
+typedef struct DataCommand{
+    char *name;
+    int id;
+}dataCommand;
+
 typedef struct Command{
     char *name;
     int id;
-    int sourceOperandValidAddressingModes[4];
-    int destinyOperandValidAddressingModes[4];
 }command;
 
 /*command line*/
