@@ -709,23 +709,3 @@ void intToBase32(char *output, int num) {
     strcpy(output, base32String);
 }
 
-/**
- * intToBase32
- *
- * The function stores a line from a file in the buffer
- * The function will check if the line's length is smaller or equal to the max line length
- *
- * params:
- * file - the file that we take the line from
- * buff - the char array that the line is stored in
- *
- * */
-int readLine(FILE *file, char *buff) {
-    char temp[MAX_LINE+1];
-    fgets(temp, MAX_LINE, file); /*get the next line*/
-    strncpy(buff,temp,MAX_LINE);
-    if(strcmp(buff,temp)){
-        return FAIL;
-    }
-    return SUCCESS;
-}
