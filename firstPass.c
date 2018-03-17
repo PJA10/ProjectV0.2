@@ -8,40 +8,17 @@
 #include "prepareFiles.h"
 
 
-int handleNotImportantLine(tokenPtr head) {
-    if(head == NULL) {
-        printLog("the line is empty\n");
-        return TRUE;
-    }
-    if(head->string[FIRST_ELEMENT] == ';') {
-        printLog("the line is a comment\n");
-        return TRUE;
-    }
-    return FALSE;
-}
 
-
-printLineError(char *lineString, int lineNumber, tokenPtr head, int *isErrorsFlag) {
-    fprintf(stderr, "in line number: %d\n%s\n\n", lineNumber, lineString);
-    (*isErrorsFlag) = TRUE;
-    freeTokenList(head);
-}
 
 
 /**
  * firstPass
  *
- * This function is going over the file and handle every by it's command type
+ * This if the main function of the first pass
+ * This function is going over the file and handle every line
  * If there is a error in one of the file lines the function will return FAIL
- * Every line the function split to a linked list and tokens
- * If the line is a data command the line will oode the data into the data memory base
- * If the line is an extern command the function will add the label as extern label
- * If the line is an action command the function will code the first memory word of the command
- * after checking the number of operands and their addressing mode after that the function will leave memory space for
- * the operands code
- * Additionally the function will make a linked list of the action and entry commands lined for the second pass
- * with the needed information on the line
- * There is no other actions on entry commands
+ * The function check a line is valid, not to long
+ * if it is then the function handle the line(read more in handleLine)
  *
  * params:
  * file - the input file to read from
@@ -54,61 +31,22 @@ printLineError(char *lineString, int lineNumber, tokenPtr head, int *isErrorsFla
 int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
     int isErrorsFlag = FALSE; /*a flag to point if there has been a error in the users code*/
     char buff[MAX_LINE + 1] = {0}; /*a buffer for the file line, 1 for the end of string sign*/
-    tokenPtr head;
-    tokenPtr curr;
-    int commandType;
     int lineNumber = 0;
     int success = readLineFromFile(file, buff); /*get the next line*/
 
     /*run for every line in the file until EOF*/
     while(!feof(file)) {
-        int hasLabel;
-        commandLinePtr currLineCommandLine;
         lineNumber++;
-
-        head = splitToTokens(buff);
-        curr = head;
-        printLog("\nline:\n");
-        printLog(buff);
-        printLog("the line token list is:\n");
-        while(curr) {
-            printLog(curr->string);
-            printLog(" -> ");
-            curr = curr->next;
+        if(success == FAIL){ /*if the line is to long, is does'nt matter if its a comment line*/
+            printLineError(buff, lineNumber, NULL);
+            isErrorsFlag = TRUE;
         }
-        curr = head;
-        printLog("\n");
-        if(success == FAIL){
-            printLineError(buff, lineNumber, head, &isErrorsFlag);
-            success = readLineFromFile(file, buff); /*get the next line*/
-            continue;
-        }
-        if(handleNotImportantLine(head)) {
-            freeTokenList(head);
-            success = readLineFromFile(file, buff); /*get the next line*/
-            continue;
-        }
-        hasLabel = checkIfHasValidLabel(head);
-        if(hasLabel == FAIL) {
-            printLineError(buff, lineNumber, head, &isErrorsFlag);
-            success = readLineFromFile(file, buff); /*get the next line*/
-            continue;
-        }
-        if (hasLabel == TRUE) { /*if there is a label, the command will be in the second token*/
-            curr = curr->next;
-            printLog("this line contain a label\n");
-            if(curr == NULL) {
-                fprintf(stderr, "ERROR: no command after label");
-                printLineError(buff, lineNumber, head, &isErrorsFlag);
-                success = readLineFromFile(file, buff); /*get the next line*/
-                continue;
+        else { /*if the line is valid*/
+            success = handleLine(buff, lineNumber, secondPassCommandsHead);
+            if(success == FAIL) {
+                isErrorsFlag = TRUE;
             }
         }
-        commandType = getCommandType(curr);
-        currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head, buff);
-
-        handleCommandLine(currLineCommandLine, secondPassCommandsHead, &isErrorsFlag);
-
         success = readLineFromFile(file, buff); /*get the next line*/
     }
     if(isErrorsFlag == TRUE) {
@@ -118,7 +56,91 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
 }
 
 
-void handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassCommandsHead, int *isErrorsFlag) {
+/**
+ * handleLine
+ *
+ * This function handle a line from the input file
+ * The function split the line to a linked list of tokens
+ * If the line is empty or a comment line the function will do nothing
+ * The function check if the line has a label
+ * The function makes a commandLine struct of the line and handle it(read more, handleCommandLine)
+ * The function return if there was an error in the line or not
+ *
+ * params:
+ * lineString - the line in string
+ * lineNumber - the number of the line
+ * secondPassCommandsHead - a pointer to the head of the second pass commandLine linked list
+ *
+ * return:
+ * int - if there was an error in the line or not
+ *
+ * */
+int handleLine(char *lineString, int lineNumber, commandLinePtr *secondPassCommandsHead) {
+    tokenPtr head = splitToTokens(lineString);
+    tokenPtr curr = head;
+    int success;
+    commandLinePtr currLineCommandLine;
+    int hasLabel;
+    int commandType;
+
+    printLog("\nline:\n");
+    printLog(lineString);
+    printLog("\nthe line token list is:\n");
+
+    while(curr) {
+        printLog(curr->string);
+        printLog(" -> ");
+        curr = curr->next;
+    }
+    curr = head;
+    printLog("\n");
+    if(handleNotCommandLines(head)) {
+        freeTokenList(head);
+        return SUCCESS;
+    }
+    hasLabel = checkIfHasValidLabel(head);
+    if(hasLabel == FAIL) {
+        printLineError(lineString, lineNumber, head);
+        return FAIL;
+    }
+    if (hasLabel == TRUE) { /*if there is a label, the command will be in the second token*/
+        curr = curr->next;
+        printLog("this line contain a label\n");
+        if(curr == NULL) {
+            fprintf(stderr, "ERROR: no command after label");
+            printLineError(lineString, lineNumber, head);
+            return FAIL;
+        }
+    }
+    commandType = getCommandType(curr);
+    currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head, lineString);
+
+    success = handleCommandLine(currLineCommandLine, secondPassCommandsHead);
+    return success;
+}
+
+
+/**
+ * handleCommandLine
+ *
+ * This function handle command lines
+ * If the line is a data command the line will code the data into the data memory base
+ * If the line is an extern command the function will add the label as extern label
+ * If the line is an action command the function will code the first memory word of the command
+ * after checking the number of operands and their addressing mode the function will leave memory space for
+ * the operands code
+ * Additionally the function will add a the commandLine struct to the linked list of the action and entry commands
+ * used by the second pass
+ *
+ * params:
+ * commandLine - the commandLine struct of the current line
+ * secondPassCommandsHead - a pointer to the head of the second pass commandLine linked list
+ *
+ * return:
+ * int - if there is an error with the command parameters or not
+ *
+ * */
+int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassCommandsHead) {
     int commandType = commandLine->commandType;
     int success;
     tokenPtr commandToken = commandLine->tokenListHead;
@@ -161,13 +183,15 @@ void handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassCom
     }
 
     if (success == FAIL) { /*if there was an error*/
-        printLineError(commandLine->lineInString, commandLine->lineNumber, NULL, isErrorsFlag);
+        printLineError(commandLine->lineInString, commandLine->lineNumber, NULL);
         /*NULL because we will free head if needed in the next if*/
+        return FAIL;
     }
     if(gotAdded == FALSE) {
         freeTokenList(commandLine->tokenListHead);
         free(commandToken);
     }
+    return SUCCESS;
 }
 
 
@@ -213,7 +237,7 @@ int handleDataCommands(tokenPtr head, int hasLabel, int commandType) {
     }
     fprintf(stderr, "\n");
     if(success == FAIL && hasLabel) {
-        freeLastLabel(labelTabale);
+        freeLastLabel(labelTable);
     }
     return success;
 }
@@ -381,7 +405,7 @@ int handleExternCommand(tokenPtr head, int hasLabel ) {
     /*set new and add it to the list*/
     strcpy(name, curr->string);
     setLabel(newLabel, name, 0, EXTERN_LABEL, FALSE);
-    if(addLabel(&labelTabale, newLabel) == FAIL) {
+    if(addLabel(&labelTable, newLabel) == FAIL) {
         free(name);
         free(newLabel);
         return FAIL;

@@ -278,7 +278,7 @@ int isNumber(char *toCheck) {
  *
  * */
 labelPtr checkLabelName(char *name){
-    labelPtr temp = labelTabale;
+    labelPtr temp = labelTable;
     for(; temp != NULL; temp = temp->next){
         if(!strcmp(temp->name, name)){
             return temp;
@@ -813,6 +813,9 @@ int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandTok
  * commandType - the operand's command type
  * whatOperand - the operand type, source or destiny
  *
+ * return:
+ * int - the operand addressing mode or FAIL if the addressing mode doest fit the action type
+ *
  * */
 int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand) {
     int operandAddressingMode;
@@ -844,6 +847,19 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
 /**
  * handleLabel
  *
+ * This function handle label disclaimer at the start of a line
+ * The function add the label to the label table
+ * If there is an error like that there is alabel with the same name all ready
+ * then the function will return FAIL
+ *
+ * params:
+ * labelName - the name of the new label, the ':' will be omitted
+ * address - the address of the label
+ * labelType - the label type, action, data or external label
+ *
+ * return:
+ * inr - if the label is valid or not
+ *
  * */
 int handleLabel(char *labelName, int address, int labelType) {
     labelPtr newLabel = (labelPtr) calloc(1, sizeof(label));
@@ -855,7 +871,7 @@ int handleLabel(char *labelName, int address, int labelType) {
     strcpy(name, labelName);
     name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
     setLabel(newLabel, name, address, labelType, FALSE);
-    if(addLabel(&labelTabale, newLabel) == FAIL) {
+    if(addLabel(&labelTable, newLabel) == FAIL) {
         free(name);
         free(newLabel);
         return FAIL;
@@ -864,3 +880,41 @@ int handleLabel(char *labelName, int address, int labelType) {
 }
 
 
+/**
+ * handleNotCommandLines
+ *
+ * This function recognize comment and empty lines
+ * The function will return TRUE if the line is a not command line
+ * and FALSE else
+ *
+ * params:
+ * head - a pointer to the head of the token linked */
+int handleNotCommandLines(tokenPtr head) {
+    if(head == NULL) {
+        printLog("the line is empty\n");
+        return TRUE;
+    }
+    if(head->string[FIRST_ELEMENT] == ';') {
+        printLog("the line is a comment\n");
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+/**
+ * printLineError
+ *
+ * This function prints the part that comes after every error
+ * The function also free the token linked list if the line
+ *
+ * params:
+ * lineString - the string of the line
+ * lineNumber - the number of the line in the input file
+ * head - the head of the token linked list
+ *
+ * */
+void printLineError(char *lineString, int lineNumber, tokenPtr head) {
+    fprintf(stderr, "in line number: %d\n%s\n\n", lineNumber, lineString);
+    freeTokenList(head);
+}

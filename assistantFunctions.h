@@ -40,6 +40,8 @@ int handleOperand(commandLinePtr actionCommandLine, tokenPtr operandToken, int w
 int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandToken);
 int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand);
 int handleLabel(char *labelName, int address, int labelType);
+int handleNotCommandLines(tokenPtr head);
+void printLineError(char *lineString, int lineNumber, tokenPtr head);
 
 
 #endif

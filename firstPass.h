@@ -15,4 +15,8 @@ int handleDotStruct(tokenPtr commandToken);
 int handleExternCommand(tokenPtr, int);
 int handleActionCommands(commandLinePtr);
 int handleEntryCommand(commandLinePtr);
+int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassCommandsHead);
+int handleLine(char *lineString, int lineNumber, commandLinePtr *secondPassCommandsHead);
+
+
 #endif

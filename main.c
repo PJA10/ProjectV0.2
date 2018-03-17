@@ -13,7 +13,7 @@
 int IC = MEMORY_START_POS;
 int DC = 0;
 int logIsOn;
-labelPtr labelTabale;
+labelPtr labelTable;
 const command commands[NUM_OF_COMMAND_TYPES + 1] = { /*a array to store all the functions names and id for identification*/
         /*1 for UNKNOWN*/
         {".data",   DATA, {END_OF_ADDRESSING_LIST}, {END_OF_ADDRESSING_LIST}},
@@ -47,15 +47,15 @@ int dataMemoryBase[MAX_MEMORY_LENGTH];
 
 int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
-    commandLinePtr secondPassCommandsHead = NULL;
-    externReferencePtr externReferencesHead = NULL;
-    logIsOn = FALSE; /*turn on the log print*/
+    logIsOn = TRUE; /*turn on the log print*/
 
     if(args < MIN_VAL_OF_ARGS) {
         printf("Error, have to get at lest one file name\n");
         return FAIL;
     }
     for(fileNum = FIRST_REAL_ARG; fileNum < args; fileNum++) { /*for every file name in argv*/
+        commandLinePtr secondPassCommandsHead = NULL;
+        externReferencePtr externReferencesHead = NULL;
         /*adding .as to the end of the file name */
         char *fileName = concat(argv[fileNum], ".as");
         FILE *file = getFile(fileName, "r");
@@ -70,7 +70,14 @@ int main(int args, char* argv[]) {
             updateDataLabelsAddress();
             if(secondPass(secondPassCommandsHead, &externReferencesHead) == SUCCESS) {
                 prepareFiles(argv[fileNum], externReferencesHead);
+                printf("file: %s succeeded\n\n", argv[fileNum]);
             }
+            else {
+                printf("file: %s filed\n\n", argv[fileNum]);
+            }
+        }
+        else {
+            printf("file: %s filed\n\n", argv[fileNum]);
         }
         freeExternReferenceList(externReferencesHead);
         freeCommandLineList(secondPassCommandsHead);
@@ -89,7 +96,7 @@ int main(int args, char* argv[]) {
  *
  * */
 void updateDataLabelsAddress() {
-    labelPtr curr = labelTabale;
+    labelPtr curr = labelTable;
     while(curr) {
         if(curr->type != ACTION_LABEL && curr->type != EXTERN_LABEL) {
             curr->address += IC;
@@ -122,5 +129,6 @@ void resetProgram() {
  *
  * */
 void freeGlobal() {
-    freeLabelList(labelTabale);
+    freeLabelList(labelTable);
+    labelTable = NULL;
 }

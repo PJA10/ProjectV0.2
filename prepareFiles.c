@@ -120,7 +120,7 @@ void makeObjFile(FILE *objFile) {
  *
  * */
 int makeEntryFile(FILE *entryFile) {
-    labelPtr curr = labelTabale;
+    labelPtr curr = labelTable;
     int wroteSomething = FALSE;
     while(curr) { /*for every label*/
         if(curr->hasEntry) { /*if the label have an .entry command*/
