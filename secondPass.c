@@ -79,7 +79,7 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externRefer
         commandToken = commandToken->next;
     }
     curr = commandToken;
-    if(commandType <= TWO_OPERANDS || commandType == LEA) {
+    if(commandType <= TWO_OPERANDS) {
         curr = curr->next;
         success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE, externReferenceHead);
 

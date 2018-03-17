@@ -38,13 +38,14 @@ void freeLastLabel(labelPtr head);
 void setLabel(labelPtr, char *, int, int, int);
 
 
-/*commands*/
-typedef struct Command{
+/*commandInfo*/
+typedef struct CommandInfo{
     char *name;
     int id;
+    int opCode;
     int sourceOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
     int destinyOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
-}command;
+}commandInfo;
 
 /*command line*/
 typedef struct CommandLine *commandLinePtr;

@@ -149,9 +149,6 @@ int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassComm
     if(commandLine->hasLabel)
         commandToken = commandToken->next;
 
-    printLog("the line is of the type: ");
-    printLog(commands[commandType].name);
-    printLog("\n");
     switch (commandType) {
         case DATA:
         case STRING:
@@ -443,23 +440,23 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         }
 
     }
-    if(commandType <= TWO_OPERANDS || commandType == LEA){
+    if(commandType <= TWO_OPERANDS){
         if(handleTwoOperands(actionCommandLine, commandToken->next) == FAIL) { /*if there is an error with operands*/
             return FAIL;
         }
     }
-    else if(commandType<=ONE_OPERAND && commandType!=LEA){ /*checks if the command requires one operand*/
+    else if(commandType<=ONE_OPERAND){ /*checks if the command requires one operand*/
         if(handleOperand(actionCommandLine, commandToken->next, DESTINY) == FAIL) {/*if there is an error with operand*/
             return FAIL;
         }
     }
     else if(commandToken -> next != NULL){ /*if we are here, the command requires zero operands so we check for extra operands*/
-        fprintf(stderr, "ERROR: expected end of line after %s\n", commands[commandType].name);
+        fprintf(stderr, "ERROR: expected end of line after %s\n", actionCommandsArray[commandType].name);
         return FAIL;
     }
 
     /*destinyOperandAddressingMode, sourceOperandAddressingMode are updated in handleOperand*/
-    codeActionCommand(actionCommandLine->destinyOperandAddressingMode, actionCommandLine->sourceOperandAddressingMode, actionCommandLine->commandType-FIRST_COMMAND_ID);
+    codeActionCommand(actionCommandLine->destinyOperandAddressingMode, actionCommandLine->sourceOperandAddressingMode, actionCommandLine->commandType);
     return SUCCESS; /* if we are here, there are no errors*/
 }
 
