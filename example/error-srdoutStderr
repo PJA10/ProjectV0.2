@@ -1,0 +1,154 @@
+ERROR: the Command sub requires two operands
+in line number: 18
+        sub #5
+
+ERROR: the Command sub requires a destination operand
+in line number: 21
+        sub #5,
+
+ERROR: the Command red requires a destination operand
+in line number: 24
+        red
+
+ERROR: the command add doesnt accept immediate addressing for the destination operand
+in line number: 30
+        add  #5,#6
+
+ERROR: the command inc doesnt accept immediate addressing for the destination operand
+in line number: 36
+        inc  #50
+
+ERROR: undefined instruction and
+in line number: 39
+        and  r1,r2
+
+ERROR: undefined instruction jSr
+in line number: 42
+        jSr  Start
+
+ERROR: expected end of line after |,|
+in line number: 48
+        cmp  r1,,r2
+
+ERROR: expected end of line after |r1|
+in line number: 51
+        add  #5,r1,r3
+
+ERROR: expected end of line after |r1|
+in line number: 54
+        prn r1 blabla
+
+ERROR: the command inc doesnt accept unknown addressing mode for the destination operand
+in line number: 57
+        inc  123
+
+ERROR: the command cmp doesnt accept unknown addressing mode for the source operand
+in line number: 60
+        cmp  #xyz,r1
+
+ERROR: can't define two labels with the same name: Next
+in line number: 63
+Next:   clr  r2
+
+ERROR: the command lea doesnt accept registers addressing for the source operand
+in line number: 69
+        lea  r3,r1
+
+ERROR: the command lea doesnt accept immediate addressing for the source operand
+in line number: 72
+        lea  #3,r5
+
+ERROR: expected end of line after stop
+in line number: 75
+        stop Start
+
+ERROR: missing comma
+in line number: 78
+        .data   200 400
+
+ERROR: multiple consecutive commas
+in line number: 84
+        .data   1, ,3
+
+ERROR: extraneous comma at end of line
+in line number: 87
+        .data   4,
+
+ERROR: .data parameters must be numbers
+in line number: 90
+        .data   #123
+
+ERROR: .data parameters must be numbers
+in line number: 93
+        .data   12.4
+
+ERROR: .data parameters must be numbers
+in line number: 96
+        .data   --5
+
+ERROR: Label cant have the name of a command
+in line number: 102
+mov:    .data   5
+
+ERROR: Label cant have the name of a register
+in line number: 105
+r1:     .data   200,300
+
+ERROR: can't define two labels with the same name
+in line number: 108
+DATA1:  .data   300
+
+ERROR: Label must start with an alpha character
+in line number: 111
+1DATA:  .data   300
+
+ERROR: can't define two labels with the same name
+in line number: 120
+        .extern DATA4
+
+ERROR: can't define two labels with the same name
+in line number: 123
+        .extern Start    
+
+ERROR: .entry label cant be an extern label
+in line number: 132
+        .entry  DATA4
+
+ERROR: undefined instruction DATA2
+in line number: 135
+DATA2   .data   4
+
+ERROR: undefined instruction .DATA
+in line number: 138
+        .DATA   5
+
+ERROR: string parameter is a string that starts and end with ", |blabla| is not a valid string
+in line number: 144
+        .string blabla
+
+ERROR: expected end of line after: |"abcdefg"|
+in line number: 147
+        .string "abcdefg" blabla
+
+ERROR: Label must be less then 31 characters
+in line number: 153
+SuperCalifragilisticExpiAlidocious: .data	4	
+
+ERROR: .data must get at lest one number
+in line number: 156
+        .data
+
+ERROR: expected label after .entry
+in line number: 159
+        .entry
+
+ERROR: undefined instruction .invalid
+in line number: 162
+        .invalid 85,90
+
+ERROR: expected end of line after rts
+in line number: 168
+        rts Next
+
+file: example/error filed
+

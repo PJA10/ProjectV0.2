@@ -1,12 +1,6 @@
 /*
- * mmn14
- * assistantFunctions.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
- *
- * In this file we have a lot of functions that dont relate to a spesific action.
- * like connecting strings, getting the command type and more
- *
- * */
+ * Created by PJA on 3/5/2018.
+*/
 
 
 #include "assistantFunctions.h"

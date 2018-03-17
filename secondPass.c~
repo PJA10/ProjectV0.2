@@ -1,7 +1,7 @@
 /*
  * mmn14
  * secondPass.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
+
  *
  * this file runs after the first pass.
  * in the second pass the functions doesnt run on the original input file, they run on a linked list that was made in the first pass
