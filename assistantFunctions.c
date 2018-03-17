@@ -698,7 +698,7 @@ void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externRefe
 void intToBase32(char *output, int num) {
     int firstFiveBits = ((int) pow(2, 5)) - 1; /*-1 for getting every bit on*/
     int lastFiveBits = (((int) pow(2, 10)) -1) - firstFiveBits; /*-1 for getting every bit on, - firstFiveBits because we want only the lasy five bits*/
-    char base32String[2]; /*two 32 base chars represents a memory word and 1 char for end of string sign*/
+    char base32String[3]; /*two 32 base chars represents a memory word and 1 char for end of string sign*/
     base32String[0] = base32[(num & lastFiveBits) >> 5];
     base32String[1] = base32[num & firstFiveBits];
     base32String[2] = '\0';
@@ -855,7 +855,7 @@ int handleLabel(char *labelName, int address, int labelType) {
     strcpy(name, labelName);
     name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
     setLabel(newLabel, name, address, labelType, FALSE);
-    if(!addLabel(&labelTabale, newLabel)) {
+    if(addLabel(&labelTabale, newLabel) == FAIL) {
         free(name);
         free(newLabel);
         return FAIL;

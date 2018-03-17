@@ -7,6 +7,27 @@
 #include "globalVars.h"
 #include "prepareFiles.h"
 
+
+int handleNotImportantLine(tokenPtr head) {
+    if(head == NULL) {
+        printLog("the line is empty\n");
+        return TRUE;
+    }
+    if(head->string[FIRST_ELEMENT] == ';') {
+        printLog("the line is a comment\n");
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+printLineError(char *lineString, int lineNumber, tokenPtr head, int *isErrorsFlag) {
+    fprintf(stderr, "in line number: %d\n%s\n\n", lineNumber, lineString);
+    (*isErrorsFlag) = TRUE;
+    freeTokenList(head);
+}
+
+
 /**
  * firstPass
  *
@@ -41,10 +62,10 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
 
     /*run for every line in the file until EOF*/
     while(!feof(file)) {
-        int hasLabel = FALSE;
+        int hasLabel;
         commandLinePtr currLineCommandLine;
-        int needToFree = TRUE;
         lineNumber++;
+
         head = splitToTokens(buff);
         curr = head;
         printLog("\nline:\n");
@@ -57,90 +78,96 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
         }
         curr = head;
         printLog("\n");
-        if(success == FAIL) {
-            isErrorsFlag = TRUE;
+        if(success == FAIL){
+            printLineError(buff, lineNumber, head, &isErrorsFlag);
+            success = readLineFromFile(file, buff); /*get the next line*/
+            continue;
         }
-        else if(head == NULL){ /*if there is no text in the line*/
-            printLog("the line is empty\n");
-            needToFree = FALSE;
+        if(handleNotImportantLine(head)) {
+            freeTokenList(head);
+            success = readLineFromFile(file, buff); /*get the next line*/
+            continue;
         }
-        else if(head->string[FIRST_ELEMENT] == ';') { /*if the line starts with a ';'*/
-            printLog("the line is a comment\n");
+        hasLabel = checkIfHasValidLabel(head);
+        if(hasLabel == FAIL) {
+            printLineError(buff, lineNumber, head, &isErrorsFlag);
+            success = readLineFromFile(file, buff); /*get the next line*/
+            continue;
         }
-        else if((hasLabel = checkIfHasValidLabel(head)) == FAIL) {
-            fprintf(stderr, "in line number: %d\n%s\n", lineNumber, buff);
-            isErrorsFlag = TRUE;
-        }
-        else (hasLabel == TRUE) { /*if there is a label, the command will be in the second token*/
+        if (hasLabel == TRUE) { /*if there is a label, the command will be in the second token*/
             curr = curr->next;
             printLog("this line contain a label\n");
-        }
-        if(curr == NULL) {
-            fprintf(stderr, "ERROR: no command after label");
-            success == FAIL;
-        }
-        else {
-            commandType = getCommandType(curr);
-
-            printLog("the line is of the type: ");
-            printLog(commands[commandType].name);
-            printLog("\n");
-
-            switch (commandType) {
-                case DATA:
-                case STRING:
-                case STRUCT:
-                    printLog("This is a data command\n");
-                    success = handleDataCommands(head, hasLabel, commandType);
-                    break;
-
-                case ENTRY:
-                    currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head,
-                                                            buff);
-                    success = handleEntryCommand(currLineCommandLine);
-                    if (success == FAIL || success == TRUE ||
-                        isErrorsFlag) { /*if there has been an error or the entry label is all ready set*/
-                        free(currLineCommandLine);
-                    } else {
-                        needToFree = FALSE;
-                        addCommandLine(secondPassCommandsHead, currLineCommandLine);
-                    }
-                    break;
-
-                case EXTERN:
-                    success = handleExternCommand(head, hasLabel);
-                    break;
-
-                case UNKNOWN:
-                    fprintf(stderr, "ERROR: undefined instruction %s\n", curr->string);
-                    break;
-
-                default:
-                    currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head,
-                                                            buff);
-                    success = handleActionCommands(currLineCommandLine);
-                    if (success == FAIL || isErrorsFlag) {
-                        free(currLineCommandLine);
-                    } else {
-                        addCommandLine(secondPassCommandsHead, currLineCommandLine);
-                        needToFree = FALSE;
-                    }
-                    break;
+            if(curr == NULL) {
+                fprintf(stderr, "ERROR: no command after label");
+                printLineError(buff, lineNumber, head, &isErrorsFlag);
+                success = readLineFromFile(file, buff); /*get the next line*/
+                continue;
             }
         }
-        if (success == FAIL) { /*if there was an error*/
-            fprintf(stderr, "in line number: %d\n%s\n", lineNumber, buff);
-            isErrorsFlag = TRUE;
-        }
-        if(needToFree) {
-            freeTokenList(head);
-        }
+        commandType = getCommandType(curr);
+        currLineCommandLine = setNewCommandLine(lineNumber, commandType, hasLabel, FAIL, FAIL, head, buff);
+
+        handleCommandLine(currLineCommandLine, secondPassCommandsHead, &isErrorsFlag);
+
         success = readLineFromFile(file, buff); /*get the next line*/
     }
     if(isErrorsFlag == TRUE) {
         return FAIL;
     }
     return SUCCESS;
+}
+
+
+void handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassCommandsHead, int *isErrorsFlag) {
+    int commandType = commandLine->commandType;
+    int success;
+    tokenPtr commandToken = commandLine->tokenListHead;
+    int gotAdded = FALSE;
+
+    if(commandLine->hasLabel)
+        commandToken = commandToken->next;
+
+    printLog("the line is of the type: ");
+    printLog(commands[commandType].name);
+    printLog("\n");
+    switch (commandType) {
+        case DATA:
+        case STRING:
+        case STRUCT:
+            printLog("This is a data command\n");
+            success = handleDataCommands(commandLine->tokenListHead, commandLine->hasLabel, commandType);
+            break;
+        case ENTRY:
+            success = handleEntryCommand(commandLine);
+            if (success == FALSE) { /*if there has been an error or the entry label is all ready set*/
+                addCommandLine(secondPassCommandsHead, commandLine);
+                gotAdded = TRUE;
+            }
+            break;
+        case EXTERN:
+            success = handleExternCommand(commandLine->tokenListHead, commandLine->hasLabel);
+            break;
+        case UNKNOWN:
+            success = FAIL;
+            fprintf(stderr, "ERROR: undefined instruction %s\n", commandToken->string);
+            break;
+        default:
+            success = handleActionCommands(commandLine);
+            if (success != FAIL) {
+                addCommandLine(secondPassCommandsHead, commandLine);
+                gotAdded = TRUE;
+            }
+            break;
+    }
+
+    if (success == FAIL) { /*if there was an error*/
+        printLineError(commandLine->lineInString, commandLine->lineNumber, NULL, isErrorsFlag);
+        /*NULL because we will free head if needed in the next if*/
+    }
+    if(gotAdded == FALSE) {
+        freeTokenList(commandLine->tokenListHead);
+        free(commandToken);
+    }
 }
 
 

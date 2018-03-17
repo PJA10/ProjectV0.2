@@ -235,7 +235,7 @@ int readLineFromFile(FILE *file, char buff[MAX_LINE+1]) {
     int ch;
     int counter = 0;
     ch = fgetc(file);
-    while(ch != '\n') {
+    while(ch != '\n' && !feof(file)) {
         if(counter < MAX_LINE) {
             buff[counter] = ch;
         }
@@ -243,7 +243,7 @@ int readLineFromFile(FILE *file, char buff[MAX_LINE+1]) {
         counter++;
     }
     if(counter > MAX_LINE + 1) {
-        fprintf(stderr, "ERROR: line is to long, the maximum of a line is:%s\n", MAX_LINE);
+        fprintf(stderr, "ERROR: line is to long, the maximum of a line is:%d\n", MAX_LINE);
         return FAIL;
     }
     buff[counter] = '\0';

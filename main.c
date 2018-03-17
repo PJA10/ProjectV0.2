@@ -49,7 +49,7 @@ int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
     commandLinePtr secondPassCommandsHead = NULL;
     externReferencePtr externReferencesHead = NULL;
-    logIsOn = TRUE; /*turn on the log print*/
+    logIsOn = FALSE; /*turn on the log print*/
 
     if(args < MIN_VAL_OF_ARGS) {
         printf("Error, have to get at lest one file name\n");
