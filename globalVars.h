@@ -9,6 +9,8 @@ extern int DC;
 extern int logIsOn;
 extern labelPtr labelTabale;
 extern const command commands[];
+extern const dataCommand dataCommands[];
+extern const actionCommand actionCommands[];
 extern const char *registers[];
 extern int actionMemoryBase[];
 extern int dataMemoryBase[];
