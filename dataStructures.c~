@@ -1,7 +1,6 @@
 /*
  * mmn14
  * dataStructures.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * In this file we have all the functions that relate to data structurs and their memmory.
  * like freeing the memmory, adding to the linked list and more

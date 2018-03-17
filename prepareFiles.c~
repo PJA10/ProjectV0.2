@@ -1,7 +1,6 @@
 /*
  * mmn14
  * prepareFiles.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * this file is in charge of everything that is related to files.
  * it prepares the files, gets the files and prints to the files
