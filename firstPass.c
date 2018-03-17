@@ -39,7 +39,11 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
     int lineNumber = 0;
     int success = SUCCESS;
 
-    fgets(buff, MAX_LINE, file); /*get the next line*/
+    success = readLine(file, buff);/*get the first line*/
+    if(success == -1){
+        fprintf(stderr, "line %d size is bigger than %d chars",lineNumber, MAX_LINE);
+        return FAIL;
+    }
     /*run for every line in the file until EOF*/
     while(!feof(file)) {
         commandLinePtr currLineCommandLine;
@@ -131,7 +135,11 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
                 freeTokenList(head);
             }
         }
-        fgets(buff, MAX_LINE, file); /*get the next line*/
+        success = readLine(file, buff);/*get the next line*/
+        if(success == -1){
+            fprintf(stderr, "line %d size is bigger than %d chars",lineNumber, MAX_LINE);
+            return FAIL;
+        }
     }
     if(isErrorsFlag == TRUE) {
         return FAIL;
