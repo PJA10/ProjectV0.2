@@ -7,7 +7,7 @@
 #define MIN_VAL_OF_ARGS 2 /*we have to get at lest 1 name of a file + the call to the program of course*/
 #define FAIL -1
 #define FIRST_REAL_ARG 1 /*the first arg is the program exe name*/
-#define MAX_LINE 80
+#define MAX_LINE 257 /*256 +1 for '\n'*/
 #define MEMORY_START_POS 100 /*the assignment instructions are listed as such*/
 #define FIRST_ELEMENT 0
 #define NUM_OF_COMMAND_TYPES 21

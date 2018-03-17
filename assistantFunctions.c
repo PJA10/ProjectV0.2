@@ -151,7 +151,7 @@ void checkFail(void *pointer) {
 }
 
 
-/*
+/**
  * checkIfHasValidLabel
  *
  * The function checks if a command is a label.
@@ -167,7 +167,7 @@ void checkFail(void *pointer) {
  * */
 int checkIfHasValidLabel(tokenPtr head) {
 	if(head -> string[strlen(head -> string)-1] == ':'){
-        char labelName[MAX_LENGTH_OF_LABEL_NAME + 1]; /*1 for ':'*/
+        char labelName[MAX_LENGTH_OF_LABEL_NAME + 2]; /*1 for ':', and 1 for '\0'*/
         strcpy(labelName, head->string);
         labelName[strlen(labelName) - 1] = '\0'; /*delete the ':'*/
         if(checkIfValidLabelName(labelName, TRUE) == FAIL)
@@ -279,7 +279,7 @@ int isNumber(char *toCheck) {
  *
  * */
 labelPtr checkLabelName(char *name){
-    labelPtr temp = labelTabale;
+    labelPtr temp = labelTable;
     for(; temp != NULL; temp = temp->next){
         if(!strcmp(temp->name, name)){
             return temp;
@@ -290,7 +290,7 @@ labelPtr checkLabelName(char *name){
 
 
 /**
- * checkAddressingMode
+ * getAddressingMode
  *
  * This function gets a token of an operand and returns which addressing mode the oprand is
  * The function will return the function returns fail if the operand isnt any adressing mode and the addressing mode if the token is an operand
@@ -302,7 +302,7 @@ labelPtr checkLabelName(char *name){
  * int - the addressing mode id
  *
  **/
-int checkAddressingMode(tokenPtr operand) {
+int getAddressingMode(tokenPtr operand) {
     if(operand -> string[0] == '#') {/* checks if the operand uses immediate addresing mode*/
         char *number = operand->string;
         number++;
@@ -702,10 +702,221 @@ void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externRefe
 void intToBase32(char *output, int num) {
     int firstFiveBits = ((int) pow(2, 5)) - 1; /*-1 for getting every bit on*/
     int lastFiveBits = (((int) pow(2, 10)) -1) - firstFiveBits; /*-1 for getting every bit on, - firstFiveBits because we want only the lasy five bits*/
-    char base32String[2]; /*two 32 base chars represents a memory word and 1 char for end of string sign*/
+    char base32String[3]; /*two 32 base chars represents a memory word and 1 char for end of string sign*/
     base32String[0] = base32[(num & lastFiveBits) >> 5];
     base32String[1] = base32[num & firstFiveBits];
     base32String[2] = '\0';
     strcpy(output, base32String);
 }
 
+
+
+/**
+ * handleSourceOperand
+ *
+ * This function handle an operand in an action command
+ * The function check that there is an operand and that the operand's addressing mode fits the line command type
+ * The function will update the commandLine operand addressing mode if there were no problems with the operand
+ * The function will return FAIL else
+ *
+ * params:
+ * actionCommandLine - a pointer to the commandLine of the operand
+ * operandToken - the operand's toke
+ *
+ * return:
+ * int - if the operand is valid or not
+ *
+ * */
+int handleOperand(commandLinePtr actionCommandLine, tokenPtr operandToken, int whatOperand) {
+    int *operandAddressingMode;
+    int commandType = actionCommandLine->commandType;
+    char operandName[8];
+
+    if(whatOperand == SOURCE) { /*if this is an source operand*/
+        /*then the operand addressint mode should be stored in the sourceOperandAddressingMode*/
+        operandAddressingMode = &(actionCommandLine->sourceOperandAddressingMode);
+        strcpy(operandName, "source");
+    }
+    else { /*if this is an destiny operand*/
+        /*then the operand addressint mode should be stored in the destinyOperandAddressingMode*/
+        operandAddressingMode = &(actionCommandLine->destinyOperandAddressingMode);
+        strcpy(operandName, "destiny");
+    }
+
+    if(operandToken == NULL) { /*checks if there is an operand at all*/
+        fprintf(stderr, "ERROR: the Command %s requires a %s operand\n", commands[commandType].name, operandName);
+        return FAIL;
+    }
+    if(whatOperand == DESTINY) { /*if this is a destiny operand*/
+        if(operandToken->next != NULL) { /*then if it's not the end of the line*/
+            fprintf(stderr, "ERROR: expected end of line after |%s|\n", operandToken->string);
+            return FAIL;
+        }
+    }
+
+    /*check the operand addressing mode*/
+    (*operandAddressingMode) = checkAddressingMode(operandToken, commandType, whatOperand);
+    if((*operandAddressingMode) == FAIL) { /*if the operand's addressing mode doest fit the cmmand type*/
+        return FAIL;
+    }
+    return SUCCESS;
+}
+
+
+/**
+ * handleTwoOperands
+ *
+ * This function handle action command with two operands
+ * The function check's the validity of both operand and that there is a comma between them
+ * The function will print if there is a problem and return FAIL
+ *
+ * params:
+ * actionCommandLine - the action command commandLine
+ * firstOperandToken - the token of the first operand, the source operand
+ *
+ * return:
+ * int - if the command operands are valid or not
+ *
+ * */
+int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandToken) {
+    tokenPtr commaToken;
+    tokenPtr secondOperandToken;
+    int commandType = actionCommandLine->commandType;
+
+    if(handleOperand(actionCommandLine, firstOperandToken, SOURCE) == FAIL) { /*if there is a error in the first operand*/
+        return FAIL;
+    }
+
+    commaToken = firstOperandToken->next; /*between the two operand suppose to be a comma*/
+    if(commaToken == NULL) { /*checks if the there is nothing after the first operand*/
+        fprintf(stderr, "ERROR: the Command %s requires two operands\n", commands[commandType].name);
+        return FAIL;
+    }
+    if(strcmp(commaToken->string, ",")) { /*checks if there is a comma*/
+        fprintf(stderr, "ERROR: missing comma\n");
+        return FAIL;
+    }
+
+    secondOperandToken = commaToken->next; /*after the comma suppose to be the second operand*/
+    if(handleOperand(actionCommandLine, secondOperandToken, DESTINY) == FAIL) { /*if there is a error in the second operand*/
+        return FAIL;
+    }
+
+    return SUCCESS;
+}
+
+
+/**
+ * checkAddressingMode
+ *
+ * This function gets a operand addressing mode and check if it is a addressing mode that fits the command type
+ * The function will print if there is a problem and return FAIL
+ * The function get a parameter to indicate the operand type, source or destiny
+ *
+ * params:
+ * operandToken - the operand's token
+ * commandType - the operand's command type
+ * whatOperand - the operand type, source or destiny
+ *
+ * return:
+ * int - the operand addressing mode or FAIL if the addressing mode doest fit the action type
+ *
+ * */
+int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand) {
+    int operandAddressingMode;
+    int isValid;
+    const int *validAddressingModes;
+    char operandNumberString[8];
+
+    if (whatOperand == SOURCE) { /*if this is an source operand*/
+        validAddressingModes = commands[commandType].sourceOperandValidAddressingModes;
+        strcpy(operandNumberString, "source");
+    } else { /*if this is an destiny operand*/
+        validAddressingModes = commands[commandType].destinyOperandValidAddressingModes;
+        strcpy(operandNumberString, "destiny");
+    }
+
+    operandAddressingMode = getAddressingMode(operandToken); /*get the operand's addressing mode*/
+
+    /*check if the operan's addressing mode fits the command type*/
+    isValid = checkIfValidAddressingMode(operandAddressingMode, validAddressingModes);
+    if (isValid == FAIL) { /*if the addressing mode is'nt valid*/
+        fprintf(stderr, "ERROR: the command %s doesnt accept %s for the %s operand\n", commands[commandType].name,
+                addressingModes[operandAddressingMode], operandNumberString);
+        return FAIL;
+    }
+    return operandAddressingMode;
+}
+
+
+/**
+ * handleLabel
+ *
+ * This function handle label disclaimer at the start of a line
+ * The function add the label to the label table
+ * If there is an error like that there is alabel with the same name all ready
+ * then the function will return FAIL
+ *
+ * params:
+ * labelName - the name of the new label, the ':' will be omitted
+ * address - the address of the label
+ * labelType - the label type, action, data or external label
+ *
+ * return:
+ * inr - if the label is valid or not
+ *
+ * */
+int handleLabel(char *labelName, int address, int labelType) {
+    labelPtr newLabel = (labelPtr) calloc(1, sizeof(label));
+    char *name = (char *) calloc( MAX_LENGTH_OF_LABEL_NAME + 2, sizeof(char)); /*1 for ':' and 1 for '\0' at the end*/
+    checkFail(newLabel);
+    checkFail(name);
+    /*if there is a label then the second token should be the command*/
+    /*set new and add it to the list*/
+    strcpy(name, labelName);
+    name[strlen(name)-1] = '\0'; /*delete the ':' at the end of the name*/
+    setLabel(newLabel, name, address, labelType, FALSE);
+    if(addLabel(&labelTable, newLabel) == FAIL) {
+        free(name);
+        free(newLabel);
+
+
+
+/**
+ * handleNotCommandLines
+ *
+ * This function recognize comment and empty lines
+ * The function will return TRUE if the line is a not command line
+ * and FALSE else
+ *
+ * params:
+ * head - a pointer to the head of the token linked */
+int handleNotCommandLines(tokenPtr head) {
+    if(head == NULL) {
+        printLog("the line is empty\n");
+        return TRUE;
+    }
+    if(head->string[FIRST_ELEMENT] == ';') {
+        printLog("the line is a comment\n");
+        return TRUE;
+    }
+    return FALSE;
+}
+
+
+/**
+ * printLineError
+ *
+ * This function prints the part that comes after every error
+ * The function also free the token linked list if the line
+ *
+ * params:
+ * lineString - the string of the line
+ * lineNumber - the number of the line in the input file
+ * head - the head of the token linked list
+ *
+ * */
+void printLineError(char *lineString, int lineNumber, tokenPtr head) {
+    fprintf(stderr, "in line number: %d\n%s\n\n", lineNumber, lineString);
+    freeTokenList(head);
+}

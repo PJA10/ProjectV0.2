@@ -241,7 +241,7 @@ void addCommandLine(commandLinePtr *head, commandLinePtr new) {
  *
  * */
 commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode,
-                                 int destinyOperandAddressingMode, tokenPtr tokenListHead) {
+                                 int destinyOperandAddressingMode, tokenPtr tokenListHead, char *lineString) {
     commandLinePtr new = (commandLinePtr) calloc(sizeof(commandLine), 1);
     checkFail(new);
     new->next = NULL;
@@ -251,6 +251,7 @@ commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, 
     new->sourceOperandAddressingMode = sourceOperandAddressingMode;
     new->destinyOperandAddressingMode = destinyOperandAddressingMode;
     new->tokenListHead = tokenListHead;
+    strcpy(new->lineInString, lineString);
     return new;
 }
 
