@@ -1,6 +1,6 @@
 # ProjectV0.2 - mmn14
 
-An assembler, a imaginary assembly compiler, created as part of a the open uni course project. By Alon Wartski and Roy Lenz.
+An assembler, a imaginary assembly compiler, created as part of a the open uni course project. By Alon Wartski and Roy Lenz. We got 100 on the project and my final score of the course is 96.
 
 The compiler divides to 3 parts:
 * The first pass on the machine language file
@@ -22,3 +22,4 @@ The function code actions operands and flag the labels with .entry command. The 
 
 # Prepare Files
 Prepare the output files for the program. Object file with the machine code, extern File with every reference to an external label in the machine code And a entry file with declaration of every entry label
+
