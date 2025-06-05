@@ -1,7 +1,6 @@
 /*
  * mmn14
  * main.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * this is the main file of this project.
  * it has all the global variables.
@@ -10,7 +9,6 @@
  *
  * */
 
-
 #include "main.h"
 #include "globalVars.h"
 #include "firstPass.h"
@@ -18,10 +16,11 @@
 #include "assistantFunctions.h"
 #include "secondPass.h"
 
+
 int IC = MEMORY_START_POS;
 int DC = 0;
-int logIsOn;
-labelPtr labelTable;
+int logIsOn = TRUE; /*turn on the log print*/
+labelPtr labelTable = NULL;
 const commandInfo actionCommandsArray[NUM_OF_ACTION_COMMANDS] = {
         /*a array to store all the functions names and id for identification*/
         {"mov", MOV, MOV_OP_CODE, {IMMEDIATE_ADDRESSING,DIRECT_ADDRESSING,STRUCT_ACCESS_ADRESSING,REGISTERS_ADDRESSING},
@@ -80,9 +79,9 @@ const char base32[] = {'!','@','#','$','%','^','&','*','<','>','a','b','c','d','
 int actionMemoryBase[MAX_MEMORY_LENGTH];
 int dataMemoryBase[MAX_MEMORY_LENGTH];
 
+
 int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
-    logIsOn = FALSE; /*turn on the log print*/
 
     if(args < MIN_VAL_OF_ARGS) {
         printf("Error, have to get at lest one file name\n");

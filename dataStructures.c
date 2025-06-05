@@ -1,7 +1,6 @@
 /*
  * mmn14
  * dataStructures.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * In this file we have all the functions that relate to data structurs and their memmory.
  * like freeing the memmory, adding to the linked list and more
@@ -16,12 +15,8 @@
  *
  * */
 
-
 #include "dataStructures.h"
 #include "assistantFunctions.h"
-
-
-/**********TOKEN:**********/
 
 
 /**
@@ -38,6 +33,7 @@ void addToken(tokenPtr *head, char *string) {
     char *newString;
     tokenPtr curr;
     tokenPtr new;
+
     new = (tokenPtr) calloc(1, sizeof(token)); /*calloc memory for the new node*/
     checkFail(new);
     newString = (char *) calloc(strlen(string) + 1, sizeof(char));
@@ -86,10 +82,6 @@ void freeTokenList(tokenPtr head) {
         head = curr;
     }
 }
-
-
-/**********END TOKEN**********/
-/**********LABEL:**********/
 
 
 /**
@@ -206,10 +198,6 @@ void setLabel(labelPtr label, char *name, int address, int type, int hasEntry) {
 }
 
 
-/**********END LABEL**********/
-/**********COMMAND_LINE:**********/
-
-
 /**
  * addCommandLine
  *
@@ -296,11 +284,16 @@ void freeCommandLineList(commandLinePtr head) {
 }
 
 
-/**********END COMMAND_LINE**********/
-/**********EXTERN_REFERENCE**********/
-
-
 /**
+ * addExternReference
+ * 
+ * The function add a new node to a linked list of ExternReference
+ * 
+ * params:
+ * externReferenceHead - the head of the ExternReference linked list
+ * name - the name of the new ExternalReference node
+ * address - the address of the new ExternReference  node
+ *
  * */
 void addExternReference(externReferencePtr *externReferenceHead, char *name, int address) {
     externReferencePtr curr = *externReferenceHead;

@@ -1,13 +1,11 @@
 /*
  * mmn14
  * assistantFunctions.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * In this file we have a lot of functions that dont relate to a spesific action.
  * like connecting strings, getting the command type and more
  *
  * */
-
 
 #include "assistantFunctions.h"
 #include "globalVars.h"
@@ -890,7 +888,7 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
  * labelType - the label type, action, data or external label
  *
  * return:
- * inr - if the label is valid or not
+ * int - if the label is valid or not
  *
  * */
 int handleLabel(char *labelName, int address, int labelType) {

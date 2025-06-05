@@ -1,7 +1,6 @@
 /*
  * mmn14
  * firstPass.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * this file is in charge of the first pass.
  * in the first pass we go over each line and start to code it from assembly to the memmory base in the wierd 32 bit
@@ -13,9 +12,6 @@
 #include "assistantFunctions.h"
 #include "globalVars.h"
 #include "prepareFiles.h"
-
-
-
 
 
 /**

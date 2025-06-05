@@ -1,7 +1,6 @@
 /*
  * mmn14
  * prepareFiles.c
- * Alon Wartski - 209729193 and Roy Lenz - 322585944
  *
  * this file is in charge of everything that is related to files.
  * it prepares the files, gets the files and prints to the files
@@ -30,6 +29,7 @@ void prepareFiles(char *inputFileName, externReferencePtr externReferencesHead){
     FILE *objFile;
     FILE *externFile;
     FILE *entryFile;
+
     if(createOutputFiles(&objFile, &externFile, &entryFile, inputFileName) == FAIL) { /*create the files*/
         return;
     }
@@ -154,6 +154,7 @@ int makeEntryFile(FILE *entryFile) {
  * */
 int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char *inputFileName) {
     char *fileName = concat(inputFileName, ".ob");
+
     (*objFIle) = getFile(fileName, "w");
     free(fileName);
     if(*objFIle == NULL) { /*if the been an error*/
@@ -174,6 +175,7 @@ int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char 
         fclose(*entryFile);
         return FAIL;
     }
+
     return SUCCESS;
 }
 
@@ -232,7 +234,9 @@ void printToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint) {
  * buff - the string to insert the line to
  *
  * return:
- * int - if the line is valid or to long*/
+ * int - if the line is valid or to long
+ * 
+ * */
 int readLineFromFile(FILE *file, char buff[MAX_LINE+1]) {
     int ch;
     int counter = 0;
