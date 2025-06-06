@@ -1,20 +1,24 @@
-assambler: assistantFunctions.o dataStructures.o firstPass.o main.o prepareFiles.o secondPass.o
-	gcc -g -Wall -ansi -ggdb3 -pedantic assistantFunctions.o dataStructures.o firstPass.o main.o prepareFiles.o secondPass.o -o assambler
+CFLAGS= -Wall -ansi -ggdb3 -pedantic
 
-assistantFunctions.o: assistantFunctions.c
-	gcc -c -Wall -ansi -ggdb3 -pedantic assistantFunctions.c -o assistantFunctions.o
+OBJS=\
+assistantFunctions.o \
+secondPass.o \
+prepareFiles.o \
+main.o \
+firstPass.o \
+dataStructures.o \
 
-dataStructures.o: dataStructures.c
-	gcc -c -Wall -ansi -ggdb3 -pedantic dataStructures.c -o dataStructures.o
+.PHONY: all clean install
+.SUFFIXES: .o .c
 
-firstPass.o: firstPass.c
-	gcc -c -Wall -ansi -ggdb3 -pedantic firstPass.c -o firstPass.o
+install all: assambler
 
-main.o: main.c constants.h assistantFunctions.h
-	gcc -c -Wall -ansi -ggdb3 -pedantic main.c -o main.o
+assambler: $(OBJS)
+	$(CC) -g $(OBJS) -o $@ $(CFLAGS)
 
-prepareFiles.o: prepareFiles.c 
-	gcc -c -Wall -ansi -ggdb3 -pedantic prepareFiles.c -o prepareFiles.o
+.c.o:
+	$(CC) -c $< -o $@ $(CFLAGS)
 
-secondPass.o: secondPass.c 
-	gcc -c -Wall -ansi -ggdb3 -pedantic secondPass.c -o secondPass.o
+clean:
+	rm -f assambler
+	rm -f $(OBJS) *.o
