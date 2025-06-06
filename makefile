@@ -11,14 +11,14 @@ dataStructures.o \
 .PHONY: all clean install
 .SUFFIXES: .o .c
 
-install all: assambler
+install all: assembler
 
-assambler: $(OBJS)
+assembler: $(OBJS)
 	$(CC) -g $(OBJS) -o $@ $(CFLAGS)
 
 .c.o:
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f assambler
+	rm -f assembler
 	rm -f $(OBJS) *.o

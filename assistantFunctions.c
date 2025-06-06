@@ -713,25 +713,33 @@ void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externRefe
 
 
 /**
- * intToBase32
+ * intToBase4
  *
- * The function convert a given int into the strange 32 base
+ * The function convert a given int into the strange 4 base
  * The function will store the result in a given string
- * The function assume that the given length is at lest 3
+ * The function assume that the given output string's length is at lest 6
  *
  * params:
  * output - the string where to store the converted number
  * num - the number that need to be converted
  *
  * */
-void intToBase32(char *output, int num) {
-    int firstFiveBits = ((int) pow(2, 5)) - 1; /*-1 for getting every bit on*/
-    int lastFiveBits = (((int) pow(2, 10)) -1) - firstFiveBits; /*-1 for getting every bit on, - firstFiveBits because we want only the lasy five bits*/
-    char base32String[3]; /*two 32 base chars represents a memory word and 1 char for end of string sign*/
-    base32String[0] = base32[(num & lastFiveBits) >> 5];
-    base32String[1] = base32[num & firstFiveBits];
-    base32String[2] = '\0';
-    strcpy(output, base32String);
+void intToBase4(char *output, int num) {
+    int i = 0;
+    int mask = 0;
+    int current_digit_value = 0;
+    char base4String[LENGTH_OF_BASE4_WORD + 1] = {0}; 
+
+    for (i = 0; i < LENGTH_OF_BASE4_WORD; i++)
+    {
+        mask = 3 << 2 * i;
+        current_digit_value = (num & mask) >> 2 * i;
+        printf("%d %d\n", current_digit_value, mask);
+        base4String[(LENGTH_OF_BASE4_WORD-1)-i] = base4[current_digit_value];
+    }
+    
+    base4String[LENGTH_OF_BASE4_WORD] = '\0';
+    strcpy(output, base4String);
 }
 
 

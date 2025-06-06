@@ -1,2 +1,2 @@
-LOOP	$b
-LENGTH	%@
+LOOP	abcbd
+LENGTH	abdcb

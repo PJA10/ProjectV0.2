@@ -35,7 +35,7 @@ void printInBinary(int num);
 void printMemoryBase(int *memoryBase);
 void addNumberToActionMemoryBase(int number);
 void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferenceHead);
-void intToBase32(char *,int num);
+void intToBase4(char *,int num);
 int handleOperand(commandLinePtr actionCommandLine, tokenPtr operandToken, int whatOperand);
 int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandToken);
 int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand);

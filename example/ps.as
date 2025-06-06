@@ -1,18 +1,20 @@
-;file ps.as
-.entry LOOP
-.entry LENGTH
-.extern L3
-.extern W
-MAIN: mov S1.1, W
- add r2,STR
-LOOP: jmp W
- prn #-5
- sub r1, r4
- inc K
-mov S1.2, r3
- bne L3
-END: stop
-STR: .string "abcdef"
-LENGTH: .data 6,-9,15
-K: .data 22
-S1: .struct 8, "ab"
+; file ps.as  
+
+.entry LOOP 
+.entry LENGTH 
+.extern L3 
+.extern W 
+;MAIN:            mov     M1[r2][r7],W 
+  add r2,STR 
+LOOP:    jmp W 
+    prn #-5 
+    sub r1, r4 
+    inc K 
+   
+                        ;mov M1[r3][r3],r3 
+    bne L3 
+END:  stop 
+STR:  .string "abcdef"
+LENGTH: .data 6,-9,15 
+K:  .data 22 
+;M1:     .mat [2][2]  1, 2 , 3, 4 

@@ -74,8 +74,7 @@ const char *registers[] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
 /*for printing*/
 const char *addressingModes[] = {"immediate addressing", "direct addressing", "struct access addressing",
                                  "registers addressing", "unknown addressing mode"};
-const char base32[] = {'!','@','#','$','%','^','&','*','<','>','a','b','c','d','e','f','g','h','i','j','k','l','m','n',
-                       'o','p','q','r','s','t','u','v'};
+const char base4[] = {'a', 'b', 'c', 'd'};
 int actionMemoryBase[MAX_MEMORY_LENGTH];
 int dataMemoryBase[MAX_MEMORY_LENGTH];
 

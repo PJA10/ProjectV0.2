@@ -115,7 +115,7 @@ void makeObjFile(FILE *objFile) {
  *
  * This function write the entry file
  * The function will write every label that have a .entry command in the next format:
- * the label name followed by the label address in the strange 32 base
+ * the label name followed by the label address in the strange 4 base
  *
  * params:
  * entryFile - the file we want to print to
@@ -207,18 +207,18 @@ FILE *getFile(char *fileName, char *mode) {
 /**
  * printToFile
  *
- * This function print to a file a given number in the strange 32 base followed by a given string
+ * This function print to a file a given number in the strange 4 base followed by a given string
  *
  * params:
  * toPrintFile - the file we want to print to
- * numberTocConvert - the number we want to print in the strange 32 base
- * stringToPrint - the string we want that will be after the 32 base string
+ * numberTocConvert - the number we want to print in the strange 4 base
+ * stringToPrint - the string we want that will be after the 4 base string
  *
  * */
 void printToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint) {
-    char base32String[3] = {0};
-    intToBase32(base32String, numberTocConvert);
-    fprintf(toPrintFile, "%s%s", base32String, stringToPrint);
+    char base4String[LENGTH_OF_BASE4_WORD + 1] = {0};
+    intToBase4(base4String, numberTocConvert);
+    fprintf(toPrintFile, "%s%s", base4String, stringToPrint);
 }
 
 
