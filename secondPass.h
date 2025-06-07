@@ -9,12 +9,12 @@
 
 int secondPass(commandLinePtr, externReferencePtr *);
 int handleSecondPassEntryCommand(commandLinePtr entryCommandLine);
-int handleStructAddressing(tokenPtr operand, externReferencePtr *externReferenceHead);
-int handleDirectAddressing(tokenPtr operand, externReferencePtr *externReferenceHead);
+int handleMatrixAddressing(tokenPtr operand, externReferencePtr *externReferencesHead);
+int handleDirectAddressing(char *operand_str, externReferencePtr *externReferencesHead);
 int handleImmediateAddressing(tokenPtr operand);
-int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand,  externReferencePtr *externReferenceHead);
+int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand,  externReferencePtr *externReferencesHead);
 int handleRegisterAddressing(tokenPtr operand, int whatOperand);
-int handleSecondPassActionCommands(commandLinePtr actionCommandLine,  externReferencePtr *externReferenceHead);
+int handleSecondPassActionCommands(commandLinePtr actionCommandLine,  externReferencePtr *externReferencesHead);
 
 
 #endif

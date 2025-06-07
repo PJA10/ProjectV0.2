@@ -23,13 +23,13 @@
  *
  * params:
  * secondPassCommandsHead - the linked list of commandLine with the action and entry commands
- * externReferenceHead - a empty linked list of the external labels references to be fill
+ * externReferencesHead - a empty linked list of the external labels references to be filled
  *
  * return:
  * int - if there is a error in the user's code
  *
  * */
-int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *externReferenceHead) {
+int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *externReferencesHead) {
     commandLinePtr curr = secondPassCommandsHead;
     int isErrorsFlag = FALSE;
     IC = MEMORY_START_POS; /*we run over all the memory again*/
@@ -41,7 +41,7 @@ int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *extern
                 break;
 
             default: /*if the current command is an action*/
-                success = handleSecondPassActionCommands(curr, externReferenceHead);
+                success = handleSecondPassActionCommands(curr, externReferencesHead);
                 break;
         }
         if(success == FAIL) { /*if there was an error in the command*/
@@ -66,17 +66,17 @@ int secondPass(commandLinePtr secondPassCommandsHead, externReferencePtr *extern
  *
  * params:
  * actionCommandLine - the commandLine of the action command
- * externReferenceHead - a linked list of every extern reference as an operand
+ * externReferencesHead - a linked list of every external label reference
  *
  * return:
  * int - if there is a error in the user's operands
  *
  * */
-int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externReferencePtr *externReferenceHead) {
+int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externReferencePtr *externReferencesHead) {
     tokenPtr  commandToken = actionCommandLine->tokenListHead;
     tokenPtr curr;
     int sourceOperandAddressingModeCode = actionCommandLine->sourceOperandAddressingMode;
-    int destinyOperandAddressingModeCode = actionCommandLine->destinyOperandAddressingMode;
+    int destinationOperandAddressingModeCode = actionCommandLine->destenationOperandAddressingMode;
     int success = SUCCESS;
     int commandType = actionCommandLine->commandType;
 
@@ -87,21 +87,23 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externRefer
     curr = commandToken;
     if(commandType <= TWO_OPERANDS) {
         curr = curr->next;
-        success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE, externReferenceHead);
-
+        success = codeOperand(sourceOperandAddressingModeCode, curr, SOURCE, externReferencesHead);
         if(success == FAIL) {
             return FAIL;
         }
 
         if(sourceOperandAddressingModeCode == REGISTERS_ADDRESSING &&
-           destinyOperandAddressingModeCode == REGISTERS_ADDRESSING) {
+           destinationOperandAddressingModeCode == REGISTERS_ADDRESSING) {
             IC--;
         }
         curr = curr->next; /*go to the comma*/
     }
     if(commandType <= ONE_OPERAND) {
-        curr = curr->next; /*from the comma or the command move to the destiny operand*/
-        success = codeOperand(destinyOperandAddressingModeCode, curr, DESTINY, externReferenceHead);
+        curr = curr->next; /*from the comma or the command move to the destination operand*/
+        success = codeOperand(destinationOperandAddressingModeCode, curr, DESTINATION, externReferencesHead);
+        if(success == FAIL) {
+            return FAIL;
+        }
     }
     return success;
 }
@@ -115,14 +117,14 @@ int handleSecondPassActionCommands(commandLinePtr actionCommandLine, externRefer
  * params:
  * operandAddressingMode - the operand addressing mode
  * operandToken - the token of the operand
- * whatOperand - witch operand is it, source or destiny
- * externReferenceHead - a linked list of every extern reference as an operand
+ * whatOperand - which operand is it, source or destination
+ * externReferencesHead - a linked list of every external label reference
  *
  * return:
  * int - if there is an error in the operand or not
  *
  * */
-int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand, externReferencePtr *externReferenceHead) {
+int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperand, externReferencePtr *externReferencesHead) {
     int success = SUCCESS;
 
     switch (operandAddressingMode) {
@@ -131,16 +133,19 @@ int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperan
             break;
 
         case DIRECT_ADDRESSING:
-            success = handleDirectAddressing(operandToken, externReferenceHead);
+            success = handleDirectAddressing(operandToken->string, externReferencesHead);
             break;
 
-        case STRUCT_ACCESS_ADRESSING:
-            success = handleStructAddressing(operandToken, externReferenceHead);
+        case MATRIX_ACCESS_ADRESSING:
+            success = handleMatrixAddressing(operandToken, externReferencesHead);
             break;
 
         case REGISTERS_ADDRESSING:
             success = handleRegisterAddressing(operandToken, whatOperand);
             break;
+        
+        default:
+            return FAIL;
     }
 
     return success;
@@ -152,11 +157,14 @@ int codeOperand(int operandAddressingMode, tokenPtr operandToken, int whatOperan
  *
  * This function handle operand that in register addressing method
  * The function will add the register number to the memory in the right bits in the memory word with dependence
- * with witch operand it is
+ * with which operand it is
  *
  * params:
  * operand - a pointer to the operand token
- * whatOperand - witch operand is it, source or destiny
+ * whatOperand - which operand is it, source or destination
+ *
+ * return:
+ * int - if the function failed or succeeded
  *
  * */
 int handleRegisterAddressing(tokenPtr operand, int whatOperand) {
@@ -165,13 +173,13 @@ int handleRegisterAddressing(tokenPtr operand, int whatOperand) {
 
     registerNumber = operand->string[1] - '0'; /*the second char in the string will be the register number, right after the 'r'*/
     /*minus '0' to convert to int, '1' - 1, '2' - 2 and so on*/
-    if(whatOperand == DESTINY) { /*if this is the destiny operand*/
+    if(whatOperand == DESTINATION) { /*if this is the destination operand*/
         binaryRegisterNum = registerNumber << NUM_OF_CODE_METHOD_BITS;
     }
     else{ /*if this is the source operand*/
         binaryRegisterNum = (registerNumber << NUM_OF_CODE_METHOD_BITS) << NUM_OF_REGISTER_NUMBER_BITS;
     }
-    binaryRegisterNum = binaryRegisterNum | ABSOLUTE_CODE_METHOD_MASK; /*just in case the mast will change from 0*/
+    binaryRegisterNum = binaryRegisterNum | ABSOLUTE_CODE_METHOD_MASK; /*just in case the mask will change from 0*/
     actionMemoryBase[IC-MEMORY_START_POS] += binaryRegisterNum; /*add to the memory*/
     IC++; /*update the counter*/
     return SUCCESS;
@@ -179,51 +187,50 @@ int handleRegisterAddressing(tokenPtr operand, int whatOperand) {
 
 
 /**
- * handleStructAddressing
+ * handleMatrixAddressing
  *
- * The function handle operand that are in struct addressing method
- * The function will search for a struct label with the name of the operand string until the dot
- * And add to the memory the address of the label
- * Then the function will add to the memory the number of the field the operand use
+ * The function handle operand that are in matrix access addressing method
+ * The function will handle the label of the matrix just like a direct addressing and add it's address to the memory
+ * After the label's address the function will add a word to memory with the row and column registers
+ * The row register will be in bits 6-9 and the col register will be in bits 2-5, bits 0-1 will represent absolute coding method
  *
  * params:
  * operand - a pointer to the operand's token
+ * externReferencesHead - a linked list of every external label reference
  *
  * return:
  * int - if the function failed or succeeded
  *
  * */
-int handleStructAddressing(tokenPtr operand, externReferencePtr *externReferenceHead) {
-    int fieldNum;
-    int i;
-    labelPtr structLabel;
-    char *labelName = (char *) calloc(strlen(operand->string)-1, sizeof(char)); /*a string fot the label's name, -1 because the operand string include the .1/2*/
-    checkFail(labelName);
-    for(i = 0; i < strlen(operand->string); i++) { /*run over the operand string*/
-        if(operand->string[i] == '.') { /*until we get to te dot*/
-            labelName[i] = '\0'; /*mark end of string in the label name*/
-            break;
-        }
-        labelName[i] = operand->string[i]; /*copy the current char from the operand string to the label name*/
-    }
-    /*i is the location of the dot*/
-    fieldNum = operand->string[i+1] - '0'; /*convert to int, '1' to 1 and '2' to 2*/
-    structLabel = checkLabelName(labelName);
-    if(structLabel == NULL) { /*if there is no label's with this name*/
-        fprintf(stderr, "ERROR: no struct label with the name of %s\n", labelName);
-        free(labelName);
+int handleMatrixAddressing(tokenPtr operand, externReferencePtr *externReferencesHead) {
+    int success = SUCCESS;
+    int rowRegisterNumber = 0, binaryRowRegister = 0;
+    int binaryColRegister = 0, colRegisterNumber = 0;
+    int operand_string_length = 0;
+    char matrixLabelSubstring[MAX_LENGTH_OF_LABEL_NAME + 1] = {0};
+    operand_string_length = strlen(operand->string);
+
+    /* we know that (operand_string_length - MATRIX_ADDRESSING_SUFFIX_LENGTH) is smaller then MAX_LENGTH_OF_LABEL_NAME
+    because this operator validated as matrix addressing operand so it has a valid label with a matrix suffix */
+    strncpy(matrixLabelSubstring, operand->string, operand_string_length - MATRIX_ADDRESSING_SUFFIX_LENGTH);
+
+    success = handleDirectAddressing(matrixLabelSubstring, externReferencesHead);
+    if(success == FAIL) {
         return FAIL;
     }
-    free(labelName); /*we don't need labelName anymore*/
 
-    addAddressToActionMemoryBase(structLabel, externReferenceHead); /*add the label address to the memory*/
-    addNumberToActionMemoryBase(fieldNum); /*followed by the filed's number*/
+    /*minus '0' to convert to int, '1' -> 1, '2' -> 2 and so on*/
+    rowRegisterNumber = operand->string[operand_string_length-6] - '0';
+    colRegisterNumber = operand->string[operand_string_length-2] - '0';
+
+    binaryRowRegister = (rowRegisterNumber << NUM_OF_CODE_METHOD_BITS) << NUM_OF_REGISTER_NUMBER_BITS;
+    binaryColRegister = colRegisterNumber << NUM_OF_CODE_METHOD_BITS;
+
+    actionMemoryBase[IC-MEMORY_START_POS] = binaryRowRegister | binaryColRegister | ABSOLUTE_CODE_METHOD_MASK;
+    IC++; /*update the counter*/
+
     return SUCCESS;
 }
-
-
-
-
 
 
 /**
@@ -235,22 +242,24 @@ int handleStructAddressing(tokenPtr operand, externReferencePtr *externReference
  * If there isn't a label with that name the function will return FAIL
  *
  * parameters:
- * operand - a pointer to the token of the operand
+ * operand_str - the operan string
+ * externReferencesHead - a linked list of every external label reference
  *
  * return:
  * int - if the function failed or succeeded
  *
  * */
-int handleDirectAddressing(tokenPtr operand, externReferencePtr *externReferenceHead) {
+int handleDirectAddressing(char *operand_str, externReferencePtr *externReferencesHead) {
     /*check if there is a label with the name of the operand string*/
-    labelPtr operandLabel = checkLabelName(operand->string);
+    labelPtr operandLabel = checkLabelName(operand_str);
 
     if(operandLabel == NULL) { /*if there isn't a label with the name of the operand string*/
-        fprintf(stderr, "ERROR: no label with the name %s are defined\n", operand->string);
+        fprintf(stderr, "ERROR: no label with the name %s are defined\n", operand_str);
         return FAIL;
     }
-    /*shift the address twice to the left for the code method bits*/
-    addAddressToActionMemoryBase(operandLabel, externReferenceHead);
+
+    addAddressToActionMemoryBase(operandLabel, externReferencesHead);
+
     return SUCCESS;
 }
 

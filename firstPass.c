@@ -105,7 +105,7 @@ int handleLine(char *lineString, int lineNumber, commandLinePtr *secondPassComma
         printLineError(lineString, lineNumber, head);
         return FAIL;
     }
-    if (hasLabel == TRUE) { /*if there is a label, the command will be in the second token*/
+    if(hasLabel == TRUE) { /*if there is a label, the command will be in the second token*/
         curr = curr->next;
         printLog("this line contain a label\n");
         if(curr == NULL) { /*if there isn't anything after the label(there is no command)*/
@@ -160,7 +160,7 @@ int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassComm
             break;
         case ENTRY: /*if the ine is a .entry command*/
             success = handleEntryCommand(commandLine); 
-            if (success == FALSE) { /*if there are no errors and the entry label isn't all ready set*/
+            if(success == FALSE) { /*if there are no errors and the entry label isn't all ready set*/
                 addCommandLine(secondPassCommandsHead, commandLine); /*we will set flag the label in the second pass*/
                 gotAdded = TRUE;
             }
@@ -174,14 +174,14 @@ int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassComm
             break;
         default: /*if the line is one of the acctions commands*/
             success = handleActionCommands(commandLine);
-            if (success != FAIL) { /*if there are no errors in the operands*/
+            if(success != FAIL) { /*if there are no errors in the operands*/
                 addCommandLine(secondPassCommandsHead, commandLine); /*then we will code them in the second pass*/
                 gotAdded = TRUE;
             }
             break;
     }
 
-    if (success == FAIL) { /*if there was an error*/
+    if(success == FAIL) { /*if there was an error*/
         printLineError(commandLine->lineInString, commandLine->lineNumber, NULL);
         /*NULL because we will free head if needed in the next if*/
     }
@@ -370,7 +370,7 @@ int handleExternCommand(tokenPtr head, int hasLabel ) {
     tokenPtr curr;
     labelPtr existsLabel;
 
-    if (hasLabel) {
+    if(hasLabel) {
         commandToken = commandToken->next; /*if there are a label then the command token is second in the line*/
         /*we do nothing more with the lable, we ignore labels in .extern and .entry*/
     }
@@ -432,7 +432,7 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         }
     }
     else if(commandType<=ONE_OPERAND){ /*checks if the command requires one operand*/
-        if(handleOperand(actionCommandLine, commandToken->next, DESTINY) == FAIL) {/*if there is an error with operand*/
+        if(handleOperand(actionCommandLine, commandToken->next, DESTINATION) == FAIL) {/*if there is an error with operand*/
             return FAIL;
         }
     }
@@ -441,8 +441,8 @@ int handleActionCommands(commandLinePtr actionCommandLine){
         return FAIL;
     }
 
-    /*destinyOperandAddressingMode, sourceOperandAddressingMode are updated in handleOperand*/
-    codeActionCommand(actionCommandLine->destinyOperandAddressingMode, actionCommandLine->sourceOperandAddressingMode, actionCommandLine->commandType);
+    /*destenationOperandAddressingMode, sourceOperandAddressingMode are updated in handleOperand*/
+    codeActionCommand(actionCommandLine->destenationOperandAddressingMode, actionCommandLine->sourceOperandAddressingMode, actionCommandLine->commandType);
     return SUCCESS; /* if we are here, there are no errors*/
 }
 
@@ -482,7 +482,7 @@ int handleEntryCommand(commandLinePtr entryCommandLine) {
     }
     label = checkLabelName(currToken->string); /*find a label with this name*/
     if(label != NULL ) { /*if there is a label with this name*/
-        if (label->type == EXTERN_LABEL) { /*if the label is an extern label*/
+        if(label->type == EXTERN_LABEL) { /*if the label is an extern label*/
             fprintf(stderr, "ERROR: .entry label cant be an extern label\n");
             return FAIL;
         }

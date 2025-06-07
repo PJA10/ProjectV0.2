@@ -73,7 +73,7 @@ int makeExternFile(FILE *externFile, externReferencePtr externReferencesHead) {
     while(curr) { /*run over the list*/
         /*and print the extern label name followed by the an address with this label*/
         fprintf(externFile, "%s\t", curr->name);
-        printToFile(externFile, curr->address, "\n");
+        printNumberToFile(externFile, curr->address, "\n");
         curr = curr->next;
     }
     return TRUE;
@@ -95,17 +95,17 @@ int makeExternFile(FILE *externFile, externReferencePtr externReferencesHead) {
  * */
 void makeObjFile(FILE *objFile) {
     int i;
-    printToFile(objFile, IC-MEMORY_START_POS, "\t"); /*print the length of the action memory base*/
-    printToFile(objFile, DC, "\n"); /*print the length of the data memory base*/
+    printNumberToFile(objFile, IC-MEMORY_START_POS, "\t"); /*print the length of the action memory base*/
+    printNumberToFile(objFile, DC, "\n"); /*print the length of the data memory base*/
     for(i = 0; i < IC-MEMORY_START_POS; i++) { /*for every action memory word we have written*/
-        printToFile(objFile, i + MEMORY_START_POS, "\t"); /*print the address and tab*/
+        printNumberToFile(objFile, i + MEMORY_START_POS, "\t"); /*print the address and tab*/
         /*i + MEMORY_START_POS because i doesn't include the 100 memory start position*/
-        printToFile(objFile, actionMemoryBase[i], "\n"); /*print the machine code in this address*/
+        printNumberToFile(objFile, actionMemoryBase[i], "\n"); /*print the machine code in this address*/
     }
     for(i = 0; i < DC; i++) { /*for every data memory word we have written*/
-        printToFile(objFile, i + IC, "\t"); /*print the address and tab*/
+        printNumberToFile(objFile, i + IC, "\t"); /*print the address and tab*/
         /*i + IC because we want the data memory to be right after the action memory*/
-        printToFile(objFile, dataMemoryBase[i], "\n"); /*print the machine code in this address*/
+        printNumberToFile(objFile, dataMemoryBase[i], "\n"); /*print the machine code in this address*/
     }
 }
 
@@ -127,7 +127,7 @@ int makeEntryFile(FILE *entryFile) {
     while(curr) { /*for every label*/
         if(curr->hasEntry) { /*if the label have an .entry command*/
             fprintf(entryFile, "%s\t", curr->name); /*print the label name*/
-            printToFile(entryFile, curr->address, "\n"); /*print the label address*/
+            printNumberToFile(entryFile, curr->address, "\n"); /*print the label address*/
             wroteSomething = TRUE;
         }
         curr = curr->next;
@@ -205,7 +205,7 @@ FILE *getFile(char *fileName, char *mode) {
 
 
 /**
- * printToFile
+ * printNumberToFile
  *
  * This function print to a file a given number in the strange 4 base followed by a given string
  *
@@ -215,7 +215,7 @@ FILE *getFile(char *fileName, char *mode) {
  * stringToPrint - the string we want that will be after the 4 base string
  *
  * */
-void printToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint) {
+void printNumberToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint) {
     char base4String[LENGTH_OF_BASE4_WORD + 1] = {0};
     intToBase4(base4String, numberTocConvert);
     fprintf(toPrintFile, "%s%s", base4String, stringToPrint);

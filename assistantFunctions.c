@@ -74,19 +74,19 @@ tokenPtr splitToTokens(char *line) {
     int inQuotationMarks = FALSE;
     tokenPtr head = NULL;
     tokenPtr tail = head; /*a tail so we wo'nt run the hole list every time we want to add a node*/
-    char currString[MAX_LINE] = {0}; /*the currant string, all the chars since the last space oe comma*/
+    char currString[MAX_LINE] = {0}; /*the currant string, all the chars since the last space or comma*/
 	ch = line[i++];
     while (ch != '\0') { /*loop over the line*/
-        if (ch == ',' && !inQuotationMarks) { /*if the current char is a comma*/
+        if(ch == ',' && !inQuotationMarks) { /*if the current char is a comma*/
             splitIfNeeded(&head, &tail, currString); /*the comma will separate if needed*/
             /*even if there was a split and even if not, now we want to add a node with a comma*/
             addToken(&tail, ","); /*add a node with ","*/
-            if (head == NULL) {
+            if(head == NULL) {
                 head = tail; /*if this is thr first node*/
             } else {
                 tail = tail->next;
             }
-        } else if (isspace(ch) && !inQuotationMarks) { /*if the char is a white-char or ':'*/
+        } else if(isspace(ch) && !inQuotationMarks) { /*if the char is a white-char*/
             splitIfNeeded(&head, &tail, currString);
             /*we don't need to do nothing with a space after another space or a comma*/
         } else { /*when ch is everything else*/
@@ -101,7 +101,7 @@ tokenPtr splitToTokens(char *line) {
                     inQuotationMarks = TRUE;
                 }
             }
-            if (ch == ':') {
+            if(ch == ':') {
                 splitIfNeeded(&head, &tail, currString);
             }
         }
@@ -166,7 +166,7 @@ void checkFail(void *pointer) {
  * head - a pointer to the first token in a line
  *
  * return:
- * int - 1 for label, 0 for not a label and -1 for error
+ * int - TRUE for label, FALSE for not a label and FAIL for error
  *
  * */
 int checkIfHasValidLabel(tokenPtr head) {
@@ -174,15 +174,17 @@ int checkIfHasValidLabel(tokenPtr head) {
 		char labelName[MAX_LENGTH_OF_LABEL_NAME + 2]; /*1 for ':', and 1 for '\0'*/
 		if(strlen(head->string) > MAX_LENGTH_OF_LABEL_NAME+1) { /*if the label name is to long, +1 for ':'*/
                 fprintf(stderr, "ERROR: Label must be less then %d characters\n",
-                        MAX_LENGTH_OF_LABEL_NAME + 1); /*1 because we wright less*/
+                        MAX_LENGTH_OF_LABEL_NAME + 1); /*+1 because we write less then*/
             return FAIL;
         }
         strcpy(labelName, head->string);
         labelName[strlen(labelName) - 1] = '\0'; /*delete the ':'*/
-        if(checkIfValidLabelName(labelName, TRUE) == FAIL)
+        if(checkIfValidLabelName(labelName, TRUE) == FAIL) {
             return FAIL;
-        else
+        }
+        else {
 		    return TRUE;
+        }
 	}
 	return FALSE;
 }
@@ -206,7 +208,7 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
     if(strlen(labelName) > MAX_LENGTH_OF_LABEL_NAME) {
         if(toPrint) {
             fprintf(stderr, "ERROR: Label must be less then %d characters\n",
-                    MAX_LENGTH_OF_LABEL_NAME + 1); /*1 because we wright less*/
+                    MAX_LENGTH_OF_LABEL_NAME + 1); /*+1 because we write less then*/
         }
         return FAIL;
     }
@@ -217,7 +219,7 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
         return FAIL;
     }
     for (i = 1; i < strlen(labelName); i++) {
-        if (!isalnum(labelName[i])) { /*checks if there is a non alphanumeric character, which is illegal*/
+        if(!isalnum(labelName[i])) { /*checks if there is a non alphanumeric character, which is illegal*/
             if(toPrint) {
                 fprintf(stderr, "ERROR: Label must contain only alphanumeric characters\n");
             }
@@ -225,7 +227,7 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
         }
     }
     for (i = 0; i < NUM_OF_ACTION_COMMANDS; i++) { /* checks that the name of the label isn't a command*/
-        if (!strcmp(labelName, actionCommandsArray[i].name)) {
+        if(!strcmp(labelName, actionCommandsArray[i].name)) {
             if(toPrint) {
                 fprintf(stderr, "ERROR: Label cant have the name of a command\n");
             }
@@ -233,7 +235,7 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
         }
     }
     for (i = 0; i < NUM_OF_REGISTERS; i++) {/* checks that the name of the label isn't a register */
-        if (!strcmp(labelName, registers[i])) {
+        if(!strcmp(labelName, registers[i])) {
             if(toPrint) {
                 fprintf(stderr, "ERROR: Label cant have the name of a register\n");
             }
@@ -260,7 +262,7 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
 int isNumber(char *toCheck) {
     int i, ch;
 
-    for(i = 0; i < strlen(toCheck); i++) {
+    for (i = 0; i < strlen(toCheck); i++) {
         ch = toCheck[i];
         if(i == 0 && (ch == '+' || ch == '-')) {
             continue; /*minus and plus can be in the first index*/
@@ -289,7 +291,7 @@ int isNumber(char *toCheck) {
  * */
 labelPtr checkLabelName(char *name){
     labelPtr temp = labelTable;
-    for(; temp != NULL; temp = temp->next){
+    for (; temp != NULL; temp = temp->next){
         if(!strcmp(temp->name, name)){
             return temp;
         }
@@ -302,7 +304,7 @@ labelPtr checkLabelName(char *name){
  * getAddressingMode
  *
  * This function gets a token of an operand and returns which addressing mode the oprand is
- * The function will return the function returns fail if the operand isnt any adressing mode and the addressing mode if the token is an operand
+ * The function returns fail if the operand isn't any valid adressing mode and the addressing mode if the token is an operand
  *
  * params:
  * operand - the tokenPtr of the operand
@@ -313,42 +315,98 @@ labelPtr checkLabelName(char *name){
  **/
 int getAddressingMode(tokenPtr operand) {
     if(operand -> string[0] == '#') {/* checks if the operand uses immediate addresing mode*/
-        char *number = operand->string;
-        number++;
-        if(isNumber(number)) {
+        if(isNumber(&(operand->string[1]))) {
             return IMMEDIATE_ADDRESSING;
         }
         return UNKNOWN_ADDRESSING_MODE;
     }
-    else{
-        int i;
-        for(i = 0; i < strlen(operand->string)-1; i++) {/*looks for a dot*/
-            if (operand->string[i] == '.') {
-                break;
-            }
-        }
-        if(operand->string[i] == '.'){ /*if we found a dot*/
-            if((operand->string[i+1] != '1' && operand->string[i+1] != '2') || operand->string[i+2] != '\0') {/*checks for struct access addressing mode*/
-                return UNKNOWN_ADDRESSING_MODE;
-            }
-            return STRUCT_ACCESS_ADRESSING;
-        }
-        else {
-            for(i = 0;i<NUM_OF_REGISTERS;i++){ /* checks if the operand uses registers addresing mode*/
-                if(!strcmp(operand -> string,registers[i])){
-                    return REGISTERS_ADDRESSING;
-                }
-            }
-            if(checkIfValidLabelName(operand->string, FALSE) == SUCCESS) {
-                return DIRECT_ADDRESSING; /*otherwise the function uses direct addressing*/
-            }
-            else {
-                return UNKNOWN_ADDRESSING_MODE;
-            }
-        }
+    if(isRegisterName(operand->string)) {
+        return REGISTERS_ADDRESSING;
     }
+    if(checkIfValidLabelName(operand->string, FALSE) == SUCCESS) {
+        return DIRECT_ADDRESSING;
+    }
+    if(isMatrixAddressing(operand->string)) {
+        printLog("Operand is MATRIX_ACCESS_ADRESSING\n");
+        return MATRIX_ACCESS_ADRESSING;
+    }
+
+    return UNKNOWN_ADDRESSING_MODE;
 }
 
+/**
+ * isMatrixAddressing
+ *
+ * This function checks if a given operand string is in the format of Matrix Access Addressing
+ *
+ * params:
+ * operand_string - the string of the operand to be checked
+ *
+ * return:
+ * int - if the given string is in Matrix Access Addressing format
+ *
+ **/
+int isMatrixAddressing(char *operand_string) {
+    int operand_string_length = 0;
+    char souldBeRegisterSubstring[3] = {0};
+    char souldBeMatrixLabelSubstring[MAX_LENGTH_OF_LABEL_NAME + 1] = {0};
+    operand_string_length = strlen(operand_string);
+
+    if(operand_string_length <= MATRIX_ADDRESSING_SUFFIX_LENGTH || operand_string_length > (MAX_LENGTH_OF_LABEL_NAME + MATRIX_ADDRESSING_SUFFIX_LENGTH)) {
+        return FALSE;
+    }
+
+    if(operand_string[operand_string_length-1] != ']' ||
+        operand_string[operand_string_length-4] != '[' ||
+        operand_string[operand_string_length-5] != ']' ||
+        operand_string[operand_string_length-8] != '[') {
+        return FALSE;
+    }
+
+    /* we know that (operand_string_length - MATRIX_ADDRESSING_SUFFIX_LENGTH) is smaller then MAX_LENGTH_OF_LABEL_NAME because we already validated operand_string_length */
+    strncpy(souldBeMatrixLabelSubstring, operand_string, operand_string_length - MATRIX_ADDRESSING_SUFFIX_LENGTH);
+    if(checkIfValidLabelName(souldBeMatrixLabelSubstring, FALSE) != SUCCESS) {
+        return FALSE;
+    }
+
+    strncpy(souldBeRegisterSubstring, &operand_string[operand_string_length-7], 2);
+    if(!isRegisterName(souldBeRegisterSubstring)) {
+        return FALSE;
+    }
+    strncpy(souldBeRegisterSubstring, &operand_string[operand_string_length-3], 2);
+    if(!isRegisterName(souldBeRegisterSubstring)) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+/**
+ * isRegisterName
+ *
+ * This function gets a string and check if the string is a register name.
+ *
+ * params:
+ * isRegisterStr - the string to check if is a register name
+ *
+ * return:
+ * int - if the given string is a register name or not
+ *
+ **/
+int isRegisterName(char *isRegisterStr)
+{
+    int i = 0;
+    for (i = 0; i < NUM_OF_REGISTERS; i++)
+    {
+        if(!strcmp(isRegisterStr, registers[i]))
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
 
 /**
  * checkIfValidAddressingMode
@@ -367,10 +425,10 @@ int getAddressingMode(tokenPtr operand) {
 int checkIfValidAddressingMode(int addressingMode, const int *validAddressingModes) {
     int i;
     for (i = 0; i < NUMBER_OF_ADRESSING_MODES; i++) { /* we check all of the leagal addressing modes to sea if our addressing mode is leagal*/
-        if (validAddressingModes[i] == addressingMode) {/* if we see our addressing mode in the list, we return valid*/
+        if(validAddressingModes[i] == addressingMode) {/* if we see our addressing mode in the list, we return valid*/
             return VALID
         }
-        if (validAddressingModes[i] == -1) { /*otherwise we return fail*/
+        if(validAddressingModes[i] == -1) { /*otherwise we return fail*/
             return FAIL;
         }
     }
@@ -582,24 +640,24 @@ void addNumberToDataMemoryBase(int newNumber) {
  *
  * params:
  * sourceAddressingMode - the id of the source operand's addressing mode, -1 for no operand
- * destinyAddressingMode - the id of the destiny operand's addressing mode, -1 for no operand
+ * destinationAddressingMode - the id of the destination operand's addressing mode, -1 for no operand
  *
  * */
-int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
+int NumberOfLinesToSkip(int sourceAddressingMode, int destinationAddressingMode) {
     int sum = 1;
-    if(sourceAddressingMode == STRUCT_ACCESS_ADRESSING){ /*if the operand is a struct we need to save two lines*/
+    if(sourceAddressingMode == MATRIX_ACCESS_ADRESSING){ /*if the operand is a matrix we need to save two lines*/
         sum += 2;
     }
     else if(sourceAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
         sum += 1;
     }
-    if(destinyAddressingMode == STRUCT_ACCESS_ADRESSING){/*if the operand is a struct we need to save two lines*/
+    if(destinationAddressingMode == MATRIX_ACCESS_ADRESSING){/*if the operand is a matrix we need to save two lines*/
         sum += 2;
     }
-    else if(destinyAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
+    else if(destinationAddressingMode != NO_OPERAND){/*otherwise, if we have an operand, we need to save one line*/
         sum += 1;
     }
-    if(destinyAddressingMode == REGISTERS_ADDRESSING && sourceAddressingMode == REGISTERS_ADDRESSING){ /* if both of the operands are register, we need to save only one line*/
+    if(destinationAddressingMode == REGISTERS_ADDRESSING && sourceAddressingMode == REGISTERS_ADDRESSING){ /* if both of the operands are register, we need to save only one line*/
         sum -= 1;
     }
     return sum;
@@ -613,23 +671,23 @@ int NumberOfLinesToSkip(int sourceAddressingMode, int destinyAddressingMode) {
  *
  * params:
  * sourceAddressingMode - the id of the source operand's addressing mode, -1 for no operand
- * destinyAddressingMode - the id of the destiny operand's addressing mode, -1 for no operand
+ * destinationAddressingMode - the id of the destination operand's addressing mode, -1 for no operand
  *
  * */
-void codeActionCommand(int destinyOperandAddressingMode, int sourceOperandAddressingMode, int commandType) {
+void codeActionCommand(int destenationOperandAddressingMode, int sourceOperandAddressingMode, int commandType) {
     int codedActionCommand;
     int opCode = actionCommandsArray[commandType].opCode;
-    if(destinyOperandAddressingMode != NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND) {
-        codedActionCommand = opCode << 6 | destinyOperandAddressingMode << 2;
+    if(destenationOperandAddressingMode != NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND) {
+        codedActionCommand = opCode << 6 | destenationOperandAddressingMode << 2;
     }
-    else if (destinyOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND){
+    else if(destenationOperandAddressingMode == NO_OPERAND && sourceOperandAddressingMode == NO_OPERAND){
         codedActionCommand = opCode << 6;
     }
     else{
-        codedActionCommand = opCode << 6 | sourceOperandAddressingMode << 4 | destinyOperandAddressingMode << 2;
+        codedActionCommand = opCode << 6 | sourceOperandAddressingMode << 4 | destenationOperandAddressingMode << 2;
     }
     actionMemoryBase[IC - MEMORY_START_POS] = codedActionCommand;
-    IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destinyOperandAddressingMode);
+    IC += NumberOfLinesToSkip(sourceOperandAddressingMode, destenationOperandAddressingMode);
 }
 
 
@@ -664,7 +722,7 @@ void printInBinary(int num) {
  * The function prints a memory base until there are five zeros in one sequence
  *
  * params:
- * memoryBase - witch memory base to print
+ * memoryBase - which memory base to print
  *
  * */
 void printMemoryBase(int *memoryBase) {
@@ -688,20 +746,22 @@ void printMemoryBase(int *memoryBase) {
 /**
  * addAddressToActionMemoryBase
  *
- * The function add a new word to the action memory base with the address of a given lable
- * The function handle extern to
+ * The function add a new word to the action memory base with the address of a given label
+ * The function handle extern labels by adding the reference to a given extern refrence list.
  *
- * paramsL
+ * params:
  * label - the label the we want to add the address of
  *
  * */
-void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferenceHead) {
-    int operandMemoryWord;
-    int codeMethodBits;
+void addAddressToActionMemoryBase(labelPtr label, externReferencePtr *externReferencesHead) {
+    int operandMemoryWord = 0;
+    int codeMethodBits = 0;
+
+    /*shift the address twice to the left for the code method bits*/
     operandMemoryWord = label->address << NUM_OF_CODE_METHOD_BITS;
     if(label->type == EXTERN_LABEL) { /*if the label is an external label*/
         codeMethodBits = EXTERNAL_CODE_METHOD_MASK; /*then the code method is external*/
-        addExternReference(externReferenceHead, label->name, IC);
+        addExternReference(externReferencesHead, label->name, IC);
     }
     else {
         codeMethodBits = RELOCATABLE_CODE_METHOD_MASK; /*then the code method is relocatable*/
@@ -734,7 +794,6 @@ void intToBase4(char *output, int num) {
     {
         mask = 3 << 2 * i;
         current_digit_value = (num & mask) >> 2 * i;
-        printf("%d %d\n", current_digit_value, mask);
         base4String[(LENGTH_OF_BASE4_WORD-1)-i] = base4[current_digit_value];
     }
     
@@ -755,6 +814,7 @@ void intToBase4(char *output, int num) {
  * params:
  * actionCommandLine - a pointer to the commandLine of the operand
  * operandToken - the operand's toke
+ * whatOperand - which operand is it, source or destination
  *
  * return:
  * int - if the operand is valid or not
@@ -763,35 +823,35 @@ void intToBase4(char *output, int num) {
 int handleOperand(commandLinePtr actionCommandLine, tokenPtr operandToken, int whatOperand) {
     int *operandAddressingMode;
     int commandType = actionCommandLine->commandType;
-    char operandName[12];
-
-    if(whatOperand == SOURCE) { /*if this is an source operand*/
-        /*then the operand addressint mode should be stored in the sourceOperandAddressingMode*/
-        operandAddressingMode = &(actionCommandLine->sourceOperandAddressingMode);
-        strcpy(operandName, "source");
-    }
-    else { /*if this is an destiny operand*/
-        /*then the operand addressint mode should be stored in the destinyOperandAddressingMode*/
-        operandAddressingMode = &(actionCommandLine->destinyOperandAddressingMode);
-        strcpy(operandName, "destination");
-    }
+    char *whatOperandString[2] = {0};
+    whatOperandString[SOURCE] = "source";
+    whatOperandString[DESTINATION] = "destination";
 
     if(operandToken == NULL) { /*checks if there is an operand at all*/
-        fprintf(stderr, "ERROR: the Command %s requires a %s operand\n", actionCommandsArray[commandType].name, operandName);
+        fprintf(stderr, "ERROR: the Command %s requires a %s operand\n", actionCommandsArray[commandType].name, whatOperandString[whatOperand]);
         return FAIL;
     }
-    if(whatOperand == DESTINY) { /*if this is a destiny operand*/
+    if(whatOperand == DESTINATION) { /*if this is a destination operand*/
         if(operandToken->next != NULL) { /*then if it's not the end of the line*/
             fprintf(stderr, "ERROR: expected end of line after |%s|\n", operandToken->string);
             return FAIL;
         }
     }
 
+    if(whatOperand == SOURCE) { /*if this is a source operand*/
+        /*then the operand addressint mode should be stored in the sourceOperandAddressingMode*/
+        operandAddressingMode = &(actionCommandLine->sourceOperandAddressingMode);
+    }
+    else { /*if this is a destination operand*/
+        /*then the operand addressint mode should be stored in the destenationOperandAddressingMode*/
+        operandAddressingMode = &(actionCommandLine->destenationOperandAddressingMode);
+    }
     /*check the operand addressing mode*/
     (*operandAddressingMode) = checkAddressingMode(operandToken, commandType, whatOperand);
     if((*operandAddressingMode) == FAIL) { /*if the operand's addressing mode doest fit the cmmand type*/
         return FAIL;
     }
+
     return SUCCESS;
 }
 
@@ -831,7 +891,7 @@ int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandTok
     }
 
     secondOperandToken = commaToken->next; /*after the comma suppose to be the second operand*/
-    if(handleOperand(actionCommandLine, secondOperandToken, DESTINY) == FAIL) { /*if there is a error in the second operand*/
+    if(handleOperand(actionCommandLine, secondOperandToken, DESTINATION) == FAIL) { /*if there is a error in the second operand*/
         return FAIL;
     }
 
@@ -844,12 +904,12 @@ int handleTwoOperands(commandLinePtr actionCommandLine, tokenPtr firstOperandTok
  *
  * This function gets a operand addressing mode and check if it is a addressing mode that fits the command type
  * The function will print if there is a problem and return FAIL
- * The function get a parameter to indicate the operand type, source or destiny
+ * The function get a parameter to indicate the operand type, source or destination
  *
  * params:
  * operandToken - the operand's token
  * commandType - the operand's command type
- * whatOperand - the operand type, source or destiny
+ * whatOperand - the operand type, source or destination
  *
  * return:
  * int - the operand addressing mode or FAIL if the addressing mode doest fit the action type
@@ -861,11 +921,11 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
     const int *validAddressingModes;
     char operandNumberString[12];
 
-    if (whatOperand == SOURCE) { /*if this is an source operand*/
+    if(whatOperand == SOURCE) { /*if this is an source operand*/
         validAddressingModes = actionCommandsArray[commandType].sourceOperandValidAddressingModes;
         strcpy(operandNumberString, "source");
-    } else { /*if this is an destiny operand*/
-        validAddressingModes = actionCommandsArray[commandType].destinyOperandValidAddressingModes;
+    } else { /*if this is an destination operand*/
+        validAddressingModes = actionCommandsArray[commandType].destinationOperandValidAddressingModes;
         strcpy(operandNumberString, "destination");
     }
 
@@ -873,7 +933,7 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
 
     /*check if the operan's addressing mode fits the command type*/
     isValid = checkIfValidAddressingMode(operandAddressingMode, validAddressingModes);
-    if (isValid == FAIL) { /*if the addressing mode is'nt valid*/
+    if(isValid == FAIL) { /*if the addressing mode is'nt valid*/
         fprintf(stderr, "ERROR: the command %s doesnt accept %s for the %s operand\n", actionCommandsArray[commandType].name,
                 addressingModes[operandAddressingMode], operandNumberString);
         return FAIL;
@@ -910,7 +970,7 @@ int handleLabel(char *labelName, int address, int labelType) {
 	if(name[strlen(name) - 1] == ':') /*if the last char of the name is : then*/
     	name[strlen(name) - 1] = '\0'; /*delete the ':' at the end of the name*/
     setLabel(newLabel, name, address, labelType, FALSE);
-    if (addLabel(&labelTable, newLabel) == FAIL) {
+    if(addLabel(&labelTable, newLabel) == FAIL) {
         free(name);
         free(newLabel);
         return FAIL;

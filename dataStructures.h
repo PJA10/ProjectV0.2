@@ -44,7 +44,7 @@ typedef struct CommandInfo{
     int id;
     int opCode;
     int sourceOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
-    int destinyOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
+    int destinationOperandValidAddressingModes[NUMBER_OF_ADRESSING_MODES];
 }commandInfo;
 
 /*command line*/
@@ -54,7 +54,7 @@ typedef struct CommandLine{
     int commandType;
     int hasLabel;
     int sourceOperandAddressingMode;
-    int destinyOperandAddressingMode;
+    int destenationOperandAddressingMode;
     tokenPtr tokenListHead;
     char lineInString[MAX_LINE+1];
     commandLinePtr next;
@@ -68,12 +68,12 @@ void freeCommandLineList(commandLinePtr head);
 /*extern reference*/
 typedef struct ExternReference *externReferencePtr;
 typedef struct ExternReference{
-    char name[30];
+    char name[MAX_LENGTH_OF_LABEL_NAME+1];
     int address;
     externReferencePtr next;
 }externReference;
 
-void addExternReference(externReferencePtr *externReferenceHead, char *name, int address);
+void addExternReference(externReferencePtr *externReferencesHead, char *name, int address);
 void freeExternReferenceList(externReferencePtr head);
 
 #endif

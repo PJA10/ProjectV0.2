@@ -10,7 +10,7 @@ FILE *getFile(char *, char *);
 int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char *inputFileName);
 int makeEntryFile(FILE *entryFile);
 void makeObjFile(FILE *objFile);
-void printToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint);
+void printNumberToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint);
 int makeExternFile(FILE *externFile, externReferencePtr externReferencesHead);
 int readLineFromFile(FILE *file, char buff[MAX_LINE+1]);
 

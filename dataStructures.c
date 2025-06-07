@@ -8,8 +8,8 @@
  *
  * token: a linked list of strings
  * lable: a linked list of lables, with the name of the lable, the type of the lable and if the lable has entry
- * commandInfo: contains all the info of a command - the name, the id, the opcode and the source and destiny addressing modes
- * commandLine: a lined list with all the commands with a token for the original line (splited to tokens) source and destiny addressing modes, command type, line 
+ * commandInfo: contains all the info of a command - the name, the id, the opcode and the source and destination addressing modes
+ * commandLine: a lined list with all the commands with a token for the original line (splited to tokens) source and destination addressing modes, command type, line 
  * number and if the command has a lable in it
  * externReference - a linked list of names and addresses
  *
@@ -234,7 +234,7 @@ void addCommandLine(commandLinePtr *head, commandLinePtr new) {
  * commandType - the new commandLine commandType
  * hasLabel - if new commandLine has a label
  * sourceOperandAddressingMode - the new commandLine sourceOperandAddressingMode
- * destinyOperandAddressingMode - the new commandLine destinyOperandAddressingMode
+ * destenationOperandAddressingMode - the new commandLine destenationOperandAddressingMode
  * tokenListHead - the new tokenListHead pointer
  *
  * return:
@@ -242,7 +242,7 @@ void addCommandLine(commandLinePtr *head, commandLinePtr new) {
  *
  * */
 commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, int sourceOperandAddressingMode,
-                                 int destinyOperandAddressingMode, tokenPtr tokenListHead, char *lineString) {
+                                 int destenationOperandAddressingMode, tokenPtr tokenListHead, char *lineString) {
     commandLinePtr new = (commandLinePtr) calloc(1, sizeof(commandLine));
     checkFail(new);
     new->next = NULL;
@@ -250,7 +250,7 @@ commandLinePtr setNewCommandLine(int lineNumber, int commandType, int hasLabel, 
     new->commandType = commandType;
     new->hasLabel = hasLabel;
     new->sourceOperandAddressingMode = sourceOperandAddressingMode;
-    new->destinyOperandAddressingMode = destinyOperandAddressingMode;
+    new->destenationOperandAddressingMode = destenationOperandAddressingMode;
     new->tokenListHead = tokenListHead;
     strcpy(new->lineInString, lineString);
     return new;
@@ -290,13 +290,13 @@ void freeCommandLineList(commandLinePtr head) {
  * The function add a new node to a linked list of ExternReference
  * 
  * params:
- * externReferenceHead - the head of the ExternReference linked list
+ * externReferencesHead - the head of the ExternReference linked list
  * name - the name of the new ExternalReference node
  * address - the address of the new ExternReference  node
  *
  * */
-void addExternReference(externReferencePtr *externReferenceHead, char *name, int address) {
-    externReferencePtr curr = *externReferenceHead;
+void addExternReference(externReferencePtr *externReferencesHead, char *name, int address) {
+    externReferencePtr curr = *externReferencesHead;
     externReferencePtr new = (externReferencePtr) calloc(1, sizeof(externReference));
     checkFail(new);
     strcpy(new->name, name);
@@ -304,7 +304,7 @@ void addExternReference(externReferencePtr *externReferenceHead, char *name, int
     new->next = NULL;
 
     if(curr == NULL) {
-        *externReferenceHead = new;
+        *externReferencesHead = new;
         return;
     }
     while(curr->next) {
