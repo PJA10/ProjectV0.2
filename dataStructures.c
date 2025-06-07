@@ -235,7 +235,8 @@ void addCommandLine(commandLinePtr *head, commandLinePtr new) {
  * hasLabel - if new commandLine has a label
  * sourceOperandAddressingMode - the new commandLine sourceOperandAddressingMode
  * destenationOperandAddressingMode - the new commandLine destenationOperandAddressingMode
- * tokenListHead - the new tokenListHead pointer
+ * tokenListHead - the new commandLine line token list
+ * lineString - the new commandLine line string
  *
  * return:
  * commandLinePtr - the new commandLine pointer

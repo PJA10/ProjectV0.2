@@ -444,17 +444,17 @@ int checkIfValidAddressingMode(int addressingMode, const int *validAddressingMod
  * The function will check that all the tokens are numbers and separated with a comma token
  *
  * params:
- * head - the head of the token linked list
+ * arrayStartToken - the head of the token linked list
  * numbersArray - the array to put the numbers in
  *
  * return:
  * int - if the function failed or succeeded
  *
  * */
-int analyzeGetArray(tokenPtr commandToken, int *numbersArray) {
+int analyzeGetArray(tokenPtr arrayStartToken, int *numbersArray) {
     int paramIndex = 0;
     int counter = 0;
-    tokenPtr curr = commandToken->next; /*the commandToken is the .data token*/
+    tokenPtr curr = arrayStartToken;
 
     while(curr) { /*run oven the linked list*/
         /*every even index if a number index and between them in the odd indexes are the commas*/
@@ -464,14 +464,14 @@ int analyzeGetArray(tokenPtr commandToken, int *numbersArray) {
                 return FAIL;
             }
             if(!isNumber(curr->string)) {
-                fprintf(stderr, "ERROR: .data parameters must be numbers\n"); /*then there is two ',' together*/
+                fprintf(stderr, "ERROR: array parameters must be numbers\n"); /*then there is two ',' together*/
                 return FAIL;
             }
             /*if everything is all right then add the number to the array*/
             numbersArray[counter] = atoi(curr->string);
             /*if the number is to big or to small*/
             if(numbersArray[counter] > MAX_VALID_DATA_NUMBER || numbersArray[counter] < MIN_VALID_DATA_NUMBER) {
-                fprintf(stderr, "ERROR: .data parameters must be between %d to %d\n", MIN_VALID_DATA_NUMBER, MAX_VALID_DATA_NUMBER);
+                fprintf(stderr, "ERROR: array parameters must be between %d to %d\n", MIN_VALID_DATA_NUMBER, MAX_VALID_DATA_NUMBER);
                 return FAIL;
             }
             counter++;
@@ -491,7 +491,7 @@ int analyzeGetArray(tokenPtr commandToken, int *numbersArray) {
         paramIndex++;
     }
     if(!counter) { /*if there was no numbers*/
-        fprintf(stderr, "ERROR: .data must get at lest one number\n");
+        fprintf(stderr, "ERROR: array must get at lest one number\n");
         return FAIL;
     }
     return SUCCESS;
@@ -524,8 +524,8 @@ int getCommandType(tokenPtr token) {
     if(!strcmp(token->string, ".string")) {
         return STRING;
     }
-    if(!strcmp(token->string, ".struct")) {
-        return STRUCT;
+    if(!strcmp(token->string, ".mat")) {
+        return MAT;
     }
     if(!strcmp(token->string, ".extern")) {
         return EXTERN;

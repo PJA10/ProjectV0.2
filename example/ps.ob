@@ -1,4 +1,4 @@
-aabbc	aaada
+aabbc	aabcd
 abcba	aacba
 abcbb	cabbc
 abcbc	acbda
@@ -32,4 +32,19 @@ acaab	aaabc
 acaac	dddbd
 acaad	aaadd
 acaba	aabbc
-acabb	aaaba
+acabb	aaaab
+acabc	aaaac
+acabd	aaaad
+acaca	aaaba
+acacb	aaaaa
+acacc	aaaaa
+acacd	aaaaa
+acada	aaaaa
+acadb	aaaaa
+acadc	aaaaa
+acadd	aaaaa
+acbaa	aaaaa
+acbab	aaaaa
+acbac	aaaaa
+acbad	aaaaa
+acbba	aaaaa

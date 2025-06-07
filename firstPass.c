@@ -35,10 +35,11 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
     int isErrorsFlag = FALSE; /*a flag to point if there has been a error in the users code*/
     char buff[MAX_LINE + 1] = {0}; /*a buffer for the file line, 1 for the end of string sign*/
     int lineNumber = 0;
-    int success = readLineFromFile(file, buff); /*get the next line*/
+    int success = SUCCESS;
 
     /*run for every line in the file until EOF*/
     while(!feof(file)) {
+        success = readLineFromFile(file, buff); /*get the next line*/
         lineNumber++;
         if(success == FAIL){ /*if the line is to long, is does'nt matter if its a comment line*/
             printLineError(buff, lineNumber, NULL);
@@ -50,7 +51,6 @@ int firstPass(FILE *file, commandLinePtr *secondPassCommandsHead) {
                 isErrorsFlag = TRUE;
             }
         }
-        success = readLineFromFile(file, buff); /*get the next line*/
     }
     if(isErrorsFlag == TRUE) {
         return FAIL;
@@ -154,7 +154,7 @@ int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassComm
     switch (commandType) {
         case DATA:
         case STRING:
-        case STRUCT: /*if the line is a .data, .string or .struct command*/
+        case MAT: /*if the line is a .data, .string or .struct command*/
             printLog("This is a data command\n");
             success = handleDataCommands(commandLine->tokenListHead, commandLine->hasLabel, commandType);
             break;
@@ -196,13 +196,13 @@ int handleCommandLine(commandLinePtr commandLine, commandLinePtr *secondPassComm
 /**
  * handleDataCommand
  *
- * This function handle the data command, .data .string and .struct
+ * This function handle the data command, .data .string and .matrix
  * The function will add a new label if needed and will code the data in the data memory base
  *
  * params:
  * head - the pointer to the head of the token linked list
  * hasLabel - if the line has a label or not
- * commandType - the type of the command, suppose to be DATA or STRING or STRUCT
+ * commandType - the type of the command, suppose to be DATA or STRING or MAT
  *
  * */
 int handleDataCommands(tokenPtr head, int hasLabel, int commandType) {
@@ -223,12 +223,14 @@ int handleDataCommands(tokenPtr head, int hasLabel, int commandType) {
             success = handleDotString(commandToken);
             break;
 
-        case STRUCT:
-            success = handleDotStruct(commandToken);
+        case MAT:
+            success = handleDotMat(commandToken);
             break;
 
         default:
             printLog("!!!!ERROR: in handleDataCommands when commandType isn't data, string or struck\n");
+            success = FAIL;
+            break;
     }
     if(success == FAIL && hasLabel) {
         freeLastLabel(labelTable);
@@ -259,7 +261,7 @@ int handleDotData(tokenPtr commandToken) {
         numbersArray[i] = NOT_VALID_DATA_NUMBER;
     }
     /*get the numbers from the user*/
-    if(analyzeGetArray(commandToken, numbersArray) == FAIL) {  /*and if there was an error*/
+    if(analyzeGetArray(commandToken->next, numbersArray) == FAIL) {  /*and if there was an error*/
         return FAIL;
     }
 
@@ -298,52 +300,66 @@ int handleDotString(tokenPtr commandToken) {
 
 
 /**
- * handleDotStruct
+ * handleDotMat
  *
- * This function handle ".struct" command
+ * This function handle ".mat" command
  * The function check if the command parameters are correct and if they are, it updates the data memory base
  * If there is an error in the line the function will return FAIL
  *
  * params:
- * commandToken - the token of the command ".struct"
+ * commandToken - the token of the command ".mat"
  *
  * return:
  * int - if the function failed or succeeded
  *
  * */
-int handleDotStruct(tokenPtr commandToken) {
+int handleDotMat(tokenPtr commandToken) {
     tokenPtr curr = commandToken->next;
-    int structNumber;
-    char *strucrString;
+    int rowSize = 0, colSize = 0;
+    int parsed = 0;
+    int i = 0;
+    int valuesArray[MAX_LINE];
+
+
     if(!curr) {
-        fprintf(stderr, "ERROR: expected after .struct a number then , then a string\n");
+        fprintf(stderr, "ERROR: expected after .mat a matrix size\n");
         return FAIL;
     }
-    if(!isNumber(curr->string)) {
-        fprintf(stderr, "ERROR: expected after .struct command a real number\n");
+
+    parsed = sscanf(curr->string, "[%d][%d]", &rowSize, &colSize);
+    if(parsed != 2 || rowSize < 1 || colSize < 1) {
+        fprintf(stderr, "ERROR: expected after .mat a matrix size ([%%d][%%d])\n");
         return FAIL;
     }
-    structNumber = atoi(curr->string);
-    if(structNumber > MAX_VALID_DATA_NUMBER || structNumber < MIN_VALID_DATA_NUMBER) { /*if the number is to big or to small*/
-        fprintf(stderr, "ERROR: struct number must be between: %d to %d\n", MAX_VALID_DATA_NUMBER, MIN_VALID_DATA_NUMBER);
-        return FAIL;
-    }
-    curr = curr->next; /*now this is suppose to be a comma token*/
+    
+    curr = curr->next; /* next can be end of line or all values of matrix */
     if(!curr) {
-        fprintf(stderr, "ERROR: expected after the number a , then a string\n");
-        return FAIL;
+        for(i = 0; i < rowSize * colSize; i++) {
+            addNumberToDataMemoryBase(0);
+        }
     }
-    if(strcmp(curr->string, ",") != 0) { /*if the curr string isn't ","*/
-        fprintf(stderr, "ERROR: expected after struct number a comma\n");
-        return FAIL;
+    else {
+        for(i = 0; i < MAX_LINE; i++) {
+            valuesArray[i] = NOT_VALID_DATA_NUMBER;
+        }
+        /*get the numbers from the user*/
+        if(analyzeGetArray(curr, valuesArray) == FAIL) {
+            return FAIL;
+        }
+         /* find how many values were in the user input  */
+        for(i = MAX_LINE-1; valuesArray[i] == NOT_VALID_DATA_NUMBER && i >= 0; i--) {
+            ;
+        }
+        if(i + 1 != rowSize*colSize) {
+            fprintf(stderr, "ERROR: number of given matrix values should be matrix size: %d\n", rowSize * colSize);
+            return FAIL;
+        }
+        for (i = 0; i < rowSize * colSize; i++)
+        {
+            addNumberToDataMemoryBase(valuesArray[i]);
+        }
     }
-    curr = curr->next;
-    if(checkStringToken(curr) == FAIL) {
-        return FAIL;
-    }
-    strucrString = curr->string;
-    addNumberToDataMemoryBase(structNumber);
-    storeString(strucrString);
+
     return SUCCESS;
 }
 

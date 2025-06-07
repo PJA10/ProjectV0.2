@@ -47,7 +47,7 @@
 enum {ACTION_LABEL, EXTERN_LABEL, DATA_LABEL};
 
 enum {MOV, CMP, ADD, SUB, LEA, NOT, CLR, INC, DEC, JMP, BNE, RED, PRN, JSR, RTS, STOP, /*action commands*/
-    DATA, STRING, STRUCT, EXTERN, ENTRY, /*data commands*/
+    DATA, STRING, MAT, EXTERN, ENTRY, /*data commands*/
     UNKNOWN}; /*others*/
 
 /*we split up the op code from the command type is self to improve maintenance, this way our actionCommandList
