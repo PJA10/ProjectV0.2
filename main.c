@@ -90,16 +90,18 @@ int main(int args, char* argv[]) {
         commandLinePtr secondPassCommandsHead = NULL;
         externReferencePtr externReferencesHead = NULL;
         /*adding .as to the end of the file name */
-        char *fileName = concat(argv[fileNum], ".as");
-        FILE *file = getFile(fileName, "r");
-        free(fileName);
-        if(file == NULL) /*if we couldn't open the file*/
+        
+        
+        preassembler(initialSourceFileName);
+        
+        FILE *initialSourceFile = getFile(initialSourceFileName, "r");
+        free(initialSourceFileName);
+        if(initialSourceFile == NULL) /*if we couldn't open the file*/
             continue; /*move to the next file name, we all ready printed the error in getFile*/
 
         /*initialization of the counters*/
         resetProgram();
-
-        if(firstPass(file, &secondPassCommandsHead) == SUCCESS) {
+        if(firstPass(initialSourceFile, &secondPassCommandsHead) == SUCCESS) {
             updateDataLabelsAddress();
             if(secondPass(secondPassCommandsHead, &externReferencesHead) == SUCCESS) {
                 prepareFiles(argv[fileNum], externReferencesHead);
@@ -112,7 +114,7 @@ int main(int args, char* argv[]) {
         else {
             printf("file: %s filed\n\n", argv[fileNum]);
         }
-		fclose(file);
+		fclose(initialSourceFile);
         freeExternReferenceList(externReferencesHead);
         freeCommandLineList(secondPassCommandsHead);
         freeGlobal();
@@ -122,6 +124,73 @@ int main(int args, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
+int openPreassemblerFiles(char *fileBasename, FILE **initialSourceFilePtr, FILE **extendedSourceFilePtr) {
+    int success = FAIL;
+    FILE *initialSourceFile = NULL;
+    FILE *extendedSourceFile = NULL;
+    char *initialSourceFileName = NULL;
+    char *extendedSourceFileName = NULL;;
+    initialSourceFileName = concatToNew(fileBasename, ".as");
+    initialSourceFile = getFile(initialSourceFileName, "r");
+    if(initialSourceFile == NULL) {
+        success = FAIL;
+        goto cleanup;
+    }
+    extendedSourceFileName = concatToNew(fileBasename, ".am");
+    extendedSourceFile = getFile(extendedSourceFileName, "w");
+    if(extendedSourceFile == NULL) {
+        success = FAIL;
+        goto cleanup;
+    }
+
+    (*initialSourceFilePtr) = initialSourceFile;
+    (*extendedSourceFilePtr) = extendedSourceFile;
+    success = SUCCESS;
+
+cleanup:
+    if(initialSourceFileName) {
+        free(initialSourceFileName);
+    }
+    if(extendedSourceFileName) {
+        free(extendedSourceFileName);
+    }
+    if(success != SUCCESS && initialSourceFile) {
+        fclose(initialSourceFile);
+    }
+    if(success != SUCCESS && extendedSourceFile) {
+        fclose(extendedSourceFile);
+    }
+
+    return success;
+}
+
+int preassembler(char *fileBasename) {
+    int success = SUCCESS;
+    FILE *initialSourceFile = NULL;
+    FILE *extendedSourceFile = NULL;
+    int isErrorsFlag = FALSE;
+    char buff[MAX_LINE + 1] = {0};
+    int lineNumber = 0;
+    openPreassemblerFiles(fileBasename, &initialSourceFile, &extendedSourceFile);
+
+    while(!feof(initialSourceFile)) {
+        success = readLineFromFile(initialSourceFile, buff);
+        lineNumber++;
+        if(success == FAIL) {
+            printLineError(buff, lineNumber, NULL);
+            isErrorsFlag = TRUE;
+            continue;
+        }
+        
+        if(success == FAIL) {
+            isErrorsFlag = TRUE;
+            continue;
+        }
+    }
+    if(isErrorsFlag == TRUE) {
+        return FAIL;
+    }
+}
 
 /**
  * updateDataLabelsAddress

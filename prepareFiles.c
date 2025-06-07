@@ -38,14 +38,14 @@ void prepareFiles(char *inputFileName, externReferencePtr externReferencesHead){
     fclose(objFile);
 
     if(makeEntryFile(entryFile) == FALSE) {
-        char *fileName = concat(inputFileName, ".ent");
+        char *fileName = concatToNew(inputFileName, ".ent");
         remove(fileName);
         free(fileName);
     }
 	fclose(entryFile);
 
     if(makeExternFile(externFile, externReferencesHead) == FALSE) {
-        char *fileName = concat(inputFileName, ".ext");
+        char *fileName = concatToNew(inputFileName, ".ext");
         remove(fileName);
         free(fileName);
     }
@@ -153,21 +153,21 @@ int makeEntryFile(FILE *entryFile) {
  *
  * */
 int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char *inputFileName) {
-    char *fileName = concat(inputFileName, ".ob");
+    char *fileName = concatToNew(inputFileName, ".ob");
 
     (*objFIle) = getFile(fileName, "w");
     free(fileName);
     if(*objFIle == NULL) { /*if the been an error*/
         return FAIL;
     }
-    fileName = concat(inputFileName, ".ext");
+    fileName = concatToNew(inputFileName, ".ext");
     (*externFile) = getFile(fileName, "w");
     free(fileName);
     if(*externFile == NULL) { /*if the been an error*/
         fclose(*objFIle);
         return FAIL;
     }
-    fileName = concat(inputFileName, ".ent");
+    fileName = concatToNew(inputFileName, ".ent");
     (*entryFile) = getFile(fileName, "w");
     free(fileName);
     if(*entryFile == NULL) { /*if the been an error*/

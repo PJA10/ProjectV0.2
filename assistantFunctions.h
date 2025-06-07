@@ -12,7 +12,7 @@
 #include <math.h>
 
 
-char* concat(char *, char *);
+char* concatToNew(char *, char *);
 tokenPtr splitToTokens(char *);
 void checkFail(void *);
 void splitIfNeeded(tokenPtr  *, tokenPtr *, char *);

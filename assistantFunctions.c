@@ -12,20 +12,20 @@
 
 
 /**
- * concat
+ * concatToNew
  *
  * The function concatenates two string to one
- * The function will return a dynamic pointer to th new string
+ * The function will return a dynamic pointer to the new string
  *
  * params:
  * s1 - the first part of the contacted string
  * s2 - the second part of the contacted string
  *
  * return:
- * char* - a dynamic pointer to the new string
+ * char* - a dynamic pointer to the new string. This needs to be freed!
  *
  * */
-char* concat(char *s1, char *s2) {
+char* concatToNew(char *s1, char *s2) {
     char *result = (char *) calloc(strlen(s1)+strlen(s2)+1, sizeof(char)); /*+1 for the null-terminator */
     checkFail(result);
     strcpy(result, s1); /*copy s1 into result*/
