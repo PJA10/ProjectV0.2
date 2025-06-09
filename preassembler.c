@@ -251,6 +251,7 @@ int preassembleLine(FILE *extendedSourceFile, char *lineString, int lineNumber, 
             for(i = 0; i < calledMacro->lineCount; i++) {
                 fprintf(extendedSourceFile, "%s\n", calledMacro->lines[i]);
             }
+            freeTokenList(lineTokenList);
             return SUCCESS;
         }
     }
@@ -260,6 +261,7 @@ int preassembleLine(FILE *extendedSourceFile, char *lineString, int lineNumber, 
         if(success != SUCCESS) {
             return FAIL;
         }
+        freeTokenList(lineTokenList);
         return SUCCESS;;
     }
     if(*activeMacroPtr != NULL) {
@@ -281,5 +283,7 @@ int preassembleLine(FILE *extendedSourceFile, char *lineString, int lineNumber, 
     else {
         fprintf(extendedSourceFile, "%s\n", lineString);
     }
+    
+    freeTokenList(lineTokenList);
     return success;
 }
