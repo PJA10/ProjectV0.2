@@ -7,6 +7,7 @@ prepareFiles.o \
 main.o \
 firstPass.o \
 dataStructures.o \
+preassembler.o \
 
 .PHONY: all clean install
 .SUFFIXES: .o .c

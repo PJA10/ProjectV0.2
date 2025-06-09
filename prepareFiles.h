@@ -11,6 +11,7 @@ int createOutputFiles(FILE **objFIle, FILE **externFile, FILE **entryFile, char 
 int makeEntryFile(FILE *entryFile);
 void makeObjFile(FILE *objFile);
 void printNumberToFile(FILE *toPrintFile, int numberTocConvert, char *stringToPrint);
+void printAddressrToFile(FILE *toPrintFile, int addressTocConvert, char *stringToPrint);
 int makeExternFile(FILE *externFile, externReferencePtr externReferencesHead);
 int readLineFromFile(FILE *file, char buff[MAX_LINE+1]);
 

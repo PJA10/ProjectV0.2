@@ -876,7 +876,6 @@ void intToBase4(char *output, int num) {
 }
 
 
-
 /**
  * handleSourceOperand
  *
