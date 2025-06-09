@@ -9,27 +9,37 @@
 /*token linked list*/
 typedef struct Token *tokenPtr;
 typedef struct Token{
-
     char *string;
     tokenPtr next;
-
 }token;
 
 
 void addToken(tokenPtr *, char *);
 void freeTokenList(tokenPtr);
 
+/* macro linked list*/
+typedef struct macro *macroPtr;
+typedef struct macro{
+    char *name;
+    char **lines;
+    int lineCount;
+    macroPtr next;
+}macro;
+
+macroPtr addmacro(macroPtr *, char *);
+int addLineToMacro(macroPtr, char *);
+void freemacroList(macroPtr);
+macroPtr findMacro(macroPtr , char *);
+
 
 /*labels table list*/
 typedef struct Label *labelPtr;
 typedef struct Label{
-
     char *name;
     int address;
     int type;
     int hasEntry;
     labelPtr next;
-
 }label;
 
 int addLabel(labelPtr *, labelPtr);

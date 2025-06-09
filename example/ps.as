@@ -1,20 +1,15 @@
-; file ps.as  
+mcro  a_mc 
+   inc r2 
+   mov  A,r1 
+mcroend 
 
-.entry LOOP 
-.entry LENGTH 
-.extern L3 
-.extern W 
-MAIN:            mov     M1[r2][r7],W 
-  add r2,STR 
-LOOP:    jmp W 
-    prn #-5 
-    sub r1, r4 
-    inc K 
-   
-                        mov M1[r3][r3],r3 
-    bne L3 
-END:  stop 
-STR:  .string "abcdef"
-LENGTH: .data 6,-9,15 
-K:  .data 22 
-M1:     .mat [2][2]  1, 2 , 3, 4 
+a_mc
+
+a_mc
+
+mcro  a_mc123adad_dada_ad
+   inc r2 adad
+   mov  A,r1 adad
+mcroend 
+
+ a_mc123adad_dada_ad

@@ -204,7 +204,7 @@ int checkIfHasValidLabel(tokenPtr head) {
  *
  * */
 int checkIfValidLabelName(char *labelName, int toPrint) {
-    int i;
+    int i = 0;
     if(strlen(labelName) > MAX_LENGTH_OF_LABEL_NAME) {
         if(toPrint) {
             fprintf(stderr, "ERROR: Label must be less then %d characters\n",
@@ -219,31 +219,105 @@ int checkIfValidLabelName(char *labelName, int toPrint) {
         return FAIL;
     }
     for (i = 1; i < strlen(labelName); i++) {
-        if(!isalnum(labelName[i])) { /*checks if there is a non alphanumeric character, which is illegal*/
+        if(!isalnum(labelName[i])) { /* checks if there is a non alphanumeric character, which is illegal */
             if(toPrint) {
                 fprintf(stderr, "ERROR: Label must contain only alphanumeric characters\n");
             }
             return FAIL;
         }
     }
-    for (i = 0; i < NUM_OF_ACTION_COMMANDS; i++) { /* checks that the name of the label isn't a command*/
-        if(!strcmp(labelName, actionCommandsArray[i].name)) {
-            if(toPrint) {
-                fprintf(stderr, "ERROR: Label cant have the name of a command\n");
-            }
-            return FAIL;
+    if (checkIfSavedWord(labelName)) {
+        if (toPrint) {
+            fprintf(stderr, "ERROR: Label name can't be a command or register name\n");
         }
-    }
-    for (i = 0; i < NUM_OF_REGISTERS; i++) {/* checks that the name of the label isn't a register */
-        if(!strcmp(labelName, registers[i])) {
-            if(toPrint) {
-                fprintf(stderr, "ERROR: Label cant have the name of a register\n");
-            }
-            return FAIL;
-        }
+        return FAIL;
     }
     return SUCCESS;
 }
+
+/**
+ * checkIfValidMacroName
+ *
+ * The function checks if a string is a valid name for a macro. Rules:
+ * - Must be less than MAX_LENGTH_OF_LABEL_NAME characters
+ * - Must start with an alphabet character
+ * - May contain alphanumeric characters or underscores
+ * - Must not be a saved word (command or register)
+ *
+ * params:
+ * macroName - the string to check
+ * toPrint - whether to print error messages
+ *
+ * return:
+ * int - SUCCESS if valid, FAIL otherwise
+ */
+int checkIfValidMacroName(char *macroName, int toPrint) {
+    int i = 0;
+    if (strlen(macroName) > MAX_LENGTH_OF_LABEL_NAME) {
+        if (toPrint) {
+            fprintf(stderr, "ERROR: Macro name must be less than %d characters\n",
+                    MAX_LENGTH_OF_LABEL_NAME + 1);
+        }
+        return FAIL;
+    }
+
+    if (!isalpha(macroName[0])) {
+        if (toPrint) {
+            fprintf(stderr, "ERROR: Macro name must start with an alphabet character\n");
+        }
+        return FAIL;
+    }
+
+    for (i = 1; i < strlen(macroName); i++) {
+        if (!isalnum(macroName[i]) && macroName[i] != '_') {
+            if (toPrint) {
+                fprintf(stderr, "ERROR: Macro name must contain only alphanumeric characters or underscores\n");
+            }
+            return FAIL;
+        }
+    }
+
+    if (checkIfSavedWord(macroName)) {
+        if (toPrint) {
+            fprintf(stderr, "ERROR: Macro name can't be a command or register name\n");
+        }
+        return FAIL;
+    }
+
+    return SUCCESS;
+}
+
+
+/**
+ * checkIfSavedWord
+ *
+ * The function checks if a given string is a reserved word:
+ * a command name or register name.
+ *
+ * params:
+ * name - the string to check
+ *
+ * return:
+ * int - TRUE if the word is reserved, FALSE otherwise
+ */
+int checkIfSavedWord(char *name) {
+    int i;
+    for (i = 0; i < NUM_OF_ACTION_COMMANDS; i++) {
+        if (!strcmp(name, actionCommandsArray[i].name)) {
+            return TRUE;
+        }
+    }
+    for (i = 0; i < NUM_OF_REGISTERS; i++) {
+        if (!strcmp(name, registers[i])) {
+            return TRUE;
+        }
+    }
+    if(!strcmp(name, MACRO_DEF_STRING) || !strcmp(name, MACRO_END_STRING)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 
 
 /**
@@ -960,6 +1034,7 @@ int checkAddressingMode(tokenPtr operandToken, int commandType, int whatOperand)
  *
  * */
 int handleLabel(char *labelName, int address, int labelType) {
+    int success = SUCCESS;
     labelPtr newLabel = (labelPtr) calloc(1, sizeof(label));
     char *name = (char *) calloc(MAX_LENGTH_OF_LABEL_NAME + 2, sizeof(char)); /*1 for ':' and 1 for '\0' at the end*/
     checkFail(newLabel);
@@ -967,15 +1042,27 @@ int handleLabel(char *labelName, int address, int labelType) {
     /*if there is a label then the second token should be the command*/
     /*set new and add it to the list*/
     strcpy(name, labelName);
-	if(name[strlen(name) - 1] == ':') /*if the last char of the name is : then*/
+	if(name[strlen(name) - 1] == ':') { /*if the last char of the name is : then*/
     	name[strlen(name) - 1] = '\0'; /*delete the ':' at the end of the name*/
+    }
+    
+    if(findMacro(macroList, name) != NULL) {
+        fprintf(stderr, "ERROR: can't define lable with macro name\n");
+        success = FAIL;
+        goto cleanup;
+    }
     setLabel(newLabel, name, address, labelType, FALSE);
     if(addLabel(&labelTable, newLabel) == FAIL) {
+        success = FAIL;
+        goto cleanup;
+    }
+
+cleanup:
+    if(success != SUCCESS) {
         free(name);
         free(newLabel);
-        return FAIL;
     }
-    return SUCCESS;
+    return success;
 }
 
 /**

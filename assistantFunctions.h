@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "constants.h"
-#include "dataStructures.h"
 #include <ctype.h>
 #include <math.h>
+#include "constants.h"
+#include "dataStructures.h"
 
 
 char* concatToNew(char *, char *);
@@ -23,12 +23,13 @@ int checkIfValidAddressingMode(int addressingMode, const int validAddressingMode
 int getAddressingMode(tokenPtr operand);
 int isRegisterName(char *);
 int isMatrixAddressing(char *);
-int checkIfHasValidLabel(tokenPtr);
 int analyzeGetArray(tokenPtr, int *);
 int getCommandType(tokenPtr);
 int checkStringToken(tokenPtr);
 void storeString(char *string);
 int checkIfValidLabelName(char *labelName, int toPrint);
+int checkIfValidMacroName(char *macroName, int toPrint);
+int checkIfSavedWord(char *name);
 labelPtr checkLabelName(char *name);
 void addNumberToDataMemoryBase(int newNumber);
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinationAddressingMode);

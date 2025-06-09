@@ -15,6 +15,7 @@
  *
  * */
 
+#include <string.h>
 #include "dataStructures.h"
 #include "assistantFunctions.h"
 
@@ -85,6 +86,125 @@ void freeTokenList(tokenPtr head) {
 
 
 /**
+ * addmacro
+ *
+ * The function adds a new macro to a macro linked list.
+ * The new macro is inserted at the end of the list.
+ *
+ * params:
+ * head - the head of the linked list (pointer to the first macro)
+ * name - the name of the new macro
+ *
+ * return:
+ * macroPtr - the new macro node
+ */
+macroPtr addmacro(macroPtr *head,  char *name) {
+    macroPtr curr = NULL;
+    macroPtr newmacro = malloc(sizeof(macro));
+    checkFail(newmacro);
+
+    newmacro->name = malloc(strlen(name) + 1);
+    checkFail(newmacro->name);
+    strcpy(newmacro->name, name);
+    newmacro->lines = NULL;
+    newmacro->lineCount = 0;
+    newmacro->next = NULL;
+    if(*head == NULL) { /*if we got an empty list*/
+        *head = newmacro;
+    }
+    else {
+        /*run to the end of the ist*/
+        curr = *head;
+        while(curr->next) {
+            curr = curr->next;
+        }
+        curr->next = newmacro;
+    }
+
+    return newmacro;
+}
+
+
+/**
+ * addLineToMacro
+ *
+ * The function adds a new line to an existing macro.
+ * The line is copied and stored dynamically.
+ *
+ * params:
+ * macro - the target macro to which the line should be added
+ * line - the string line to add
+ *
+ * return:
+ * int - if there was an error or not
+ */
+int addLineToMacro(macroPtr macro, char *line) {
+    char **newLines = realloc(macro->lines, (macro->lineCount + 1) * sizeof(char *));
+    checkFail(newLines);
+
+    macro->lines = newLines;
+    macro->lines[macro->lineCount] = malloc(strlen(line) + 1);
+    checkFail(macro->lines[macro->lineCount]);
+    strcpy(macro->lines[macro->lineCount], line);
+    macro->lineCount++;
+
+    return TRUE;
+}
+
+
+/**
+ * freemacroList
+ *
+ * The function frees the entire macro linked list and all dynamically
+ * allocated memory inside it, including macro names and their lines.
+ *
+ * params:
+ * head - pointer to the head of the macro list
+ *
+ */
+void freemacroList(macroPtr head) {
+    int i = 0;
+    macroPtr curr = NULL;
+
+    while(head) {
+        curr = head;
+        head = head->next;
+
+        free(curr->name);
+
+        for(i = 0; i < curr->lineCount; i++) {
+            free(curr->lines[i]);
+        }
+
+        free(curr->lines);
+        free(curr);
+    }
+}
+
+/**
+ * findMacro
+ *
+ * The function searches for a macro with a specific name in a macro linked list.
+ *
+ * params:
+ * head - the head of the macro linked list
+ * name - the name of the macro to search for
+ *
+ * return:
+ * macroPtr - a pointer to the found macro, or NULL if not found
+ */
+macroPtr findMacro(macroPtr head, char *name) {
+    while (head != NULL) {
+        if (strcmp(head->name, name) == 0) {
+            return head;
+        }
+        head = head->next;
+    }
+    return NULL;
+}
+
+
+/**
  * addLabel
  *
  * The function add a new label to a label linked list
@@ -113,7 +233,7 @@ int addLabel(labelPtr *head, labelPtr new) {
         }
         curr = curr->next;
     }
-    if(!strcmp(curr->name, new->name)) { /*check for te last one to*/
+    if(!strcmp(curr->name, new->name)) { /*check for the last one to*/
         fprintf(stderr, "ERROR: can't define two labels with the same name: %s\n", curr->name);
         return FAIL;
     }

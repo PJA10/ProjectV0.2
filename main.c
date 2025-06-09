@@ -21,6 +21,7 @@ int IC = MEMORY_START_POS;
 int DC = 0;
 int logIsOn = TRUE; /*turn on the log print*/
 labelPtr labelTable = NULL;
+macroPtr macroList = NULL;
 const commandInfo actionCommandsArray[NUM_OF_ACTION_COMMANDS] = {
         /*a array to store all the functions names and id for identification*/
         {"mov", MOV, MOV_OP_CODE, {IMMEDIATE_ADDRESSING,DIRECT_ADDRESSING,MATRIX_ACCESS_ADRESSING,REGISTERS_ADDRESSING},
@@ -81,6 +82,7 @@ int dataMemoryBase[MAX_MEMORY_LENGTH];
 
 int main(int args, char* argv[]) {
     int fileNum; /*the file number(first file, second file...)*/
+    int success = SUCCESS;
 
     if(args < MIN_VAL_OF_ARGS) {
         printf("Error, have to get at lest one file name\n");
@@ -89,32 +91,45 @@ int main(int args, char* argv[]) {
     for(fileNum = FIRST_REAL_ARG; fileNum < args; fileNum++) { /*for every file name in argv*/
         commandLinePtr secondPassCommandsHead = NULL;
         externReferencePtr externReferencesHead = NULL;
-        /*adding .as to the end of the file name */
+        FILE *extendedSourceFile = NULL;
+        char *extendedSourceFileName = NULL;;
         
-        
-        preassembler(initialSourceFileName);
-        
-        FILE *initialSourceFile = getFile(initialSourceFileName, "r");
-        free(initialSourceFileName);
-        if(initialSourceFile == NULL) /*if we couldn't open the file*/
-            continue; /*move to the next file name, we all ready printed the error in getFile*/
-
         /*initialization of the counters*/
         resetProgram();
-        if(firstPass(initialSourceFile, &secondPassCommandsHead) == SUCCESS) {
-            updateDataLabelsAddress();
-            if(secondPass(secondPassCommandsHead, &externReferencesHead) == SUCCESS) {
-                prepareFiles(argv[fileNum], externReferencesHead);
-                printf("file: %s succeeded\n\n", argv[fileNum]);
-            }
-            else {
-                printf("file: %s filed\n\n", argv[fileNum]);
-            }
+
+        success = preassembler(argv[fileNum]);
+        if(success != SUCCESS) {
+            goto iteration_cleanup;
         }
-        else {
+        
+        extendedSourceFileName = concatToNew(argv[fileNum], ".am");
+        extendedSourceFile = getFile(extendedSourceFileName, "r");
+        free(extendedSourceFileName);
+        if(extendedSourceFile == NULL) {
+            success = FAIL;
+            goto iteration_cleanup;
+        }
+
+        success = firstPass(extendedSourceFile, &secondPassCommandsHead);
+        if(success != SUCCESS) {
+            goto iteration_cleanup;
+        }
+        updateDataLabelsAddress();
+        success = secondPass(secondPassCommandsHead, &externReferencesHead);
+        if(success != SUCCESS) {
+            goto iteration_cleanup;
+        }
+        prepareFiles(argv[fileNum], externReferencesHead);
+        printf("file: %s succeeded\n\n", argv[fileNum]);
+
+iteration_cleanup:
+        if(success != SUCCESS) {
             printf("file: %s filed\n\n", argv[fileNum]);
+            cleanupExtendedSourceFile(argv[fileNum]);
         }
-		fclose(initialSourceFile);
+        if(extendedSourceFile != NULL) {
+                fclose(extendedSourceFile);
+        }
         freeExternReferenceList(externReferencesHead);
         freeCommandLineList(secondPassCommandsHead);
         freeGlobal();
@@ -123,6 +138,31 @@ int main(int args, char* argv[]) {
     printMemoryBase(dataMemoryBase);*/
     return EXIT_SUCCESS;
 }
+
+int cleanupExtendedSourceFile(char *fileBasename) {
+    int success = SUCCESS;
+    FILE *extendedSourceFile = NULL;
+    char *extendedSourceFileName = NULL;;
+
+    extendedSourceFileName = concatToNew(fileBasename, ".am");
+
+    extendedSourceFile = fopen(extendedSourceFileName, "r");
+    if (extendedSourceFile) { /* only if file exists */
+        fclose(extendedSourceFile);
+        if (remove(extendedSourceFileName) != 0) {
+            fprintf(stderr, "ERROR: can't delete file %s\n", extendedSourceFileName);
+            success = FAIL;
+            goto cleanup;;
+        }
+    }
+
+cleanup:
+    if(extendedSourceFileName) {
+        free(extendedSourceFileName);
+    }
+    return success;
+}
+
 
 int openPreassemblerFiles(char *fileBasename, FILE **initialSourceFilePtr, FILE **extendedSourceFilePtr) {
     int success = FAIL;
@@ -164,32 +204,119 @@ cleanup:
     return success;
 }
 
+
+int handleMacroDef(tokenPtr lineTokenList,char *lineString, int lineNumber, macroPtr *activeMacroPtr) {
+    tokenPtr currToken = lineTokenList->next;
+
+    if(!currToken) {
+        printLineError(lineString, lineNumber, lineTokenList);
+        return FAIL;
+    }
+    if(checkIfValidMacroName(currToken->string, TRUE) == FAIL) {
+        printLineError(lineString, lineNumber, lineTokenList);
+        return FAIL;
+    }
+    if(findMacro(macroList, currToken->string) != NULL) {
+        fprintf(stderr, "ERROR: macro name already exists\n");
+        printLineError(lineString, lineNumber, lineTokenList);
+        return FAIL;
+    }
+    if(currToken->next != NULL) {
+        fprintf(stderr, "ERROR: excess characters in macro definition\n");
+        printLineError(lineString, lineNumber, lineTokenList);
+        return FAIL;
+    }
+
+    *activeMacroPtr = addmacro(&macroList, currToken->string);
+    if(*activeMacroPtr == NULL) {
+        printLineError(lineString, lineNumber, lineTokenList);
+        return FAIL;
+    }
+    return SUCCESS;
+}
+
+
 int preassembler(char *fileBasename) {
     int success = SUCCESS;
     FILE *initialSourceFile = NULL;
     FILE *extendedSourceFile = NULL;
     int isErrorsFlag = FALSE;
-    char buff[MAX_LINE + 1] = {0};
+    char lineString[MAX_LINE + 1] = {0};
     int lineNumber = 0;
-    openPreassemblerFiles(fileBasename, &initialSourceFile, &extendedSourceFile);
-
+    success = openPreassemblerFiles(fileBasename, &initialSourceFile, &extendedSourceFile);
+    if(success != SUCCESS) {
+        goto cleanup;
+    }
+    macroPtr activeMacro = NULL;
     while(!feof(initialSourceFile)) {
-        success = readLineFromFile(initialSourceFile, buff);
+        success = readLineFromFile(initialSourceFile, lineString);
         lineNumber++;
         if(success == FAIL) {
-            printLineError(buff, lineNumber, NULL);
+            printLineError(lineString, lineNumber, NULL);
             isErrorsFlag = TRUE;
             continue;
         }
-        
-        if(success == FAIL) {
-            isErrorsFlag = TRUE;
+        tokenPtr lineTokenList = splitToTokens(lineString);
+        tokenPtr currToken = lineTokenList;
+        int i = 0;
+
+        if(lineTokenList) {
+            macroPtr calledMacro = findMacro(macroList, lineTokenList->string);
+            if(calledMacro != NULL) {
+                if(lineTokenList->next != NULL) {
+                    fprintf(stderr, "ERROR: excess characters in macro call\n");
+                    printLineError(lineString, lineNumber, lineTokenList);
+                    isErrorsFlag = TRUE;
+                    continue;
+                }
+                for(i = 0; i < calledMacro->lineCount; i++) {
+                    fprintf(extendedSourceFile, "%s\n", calledMacro->lines[i]);
+                }
+                continue;
+            }
+        }
+
+        if(lineTokenList && !strcmp(lineTokenList->string, MACRO_DEF_STRING)) {
+            success = handleMacroDef(lineTokenList, lineString, lineNumber, &activeMacro);
+            if(success != SUCCESS) {
+                isErrorsFlag = TRUE;
+            }
             continue;
+        }
+        if(activeMacro != NULL) {
+            if(lineTokenList && strcmp(lineTokenList->string, MACRO_END_STRING) == 0) {
+                if(lineTokenList->next != NULL) {
+                    fprintf(stderr, "ERROR: excess characters in macro closer\n");
+                    printLineError(lineString, lineNumber, lineTokenList);
+                    isErrorsFlag = TRUE;
+                    continue;
+                }
+                activeMacro = NULL;
+            }
+            else {
+                if(addLineToMacro(activeMacro, lineString) != SUCCESS) {
+                    printLineError(lineString, lineNumber, lineTokenList);
+                    isErrorsFlag = TRUE;
+                    continue;
+                }
+            }
+        }
+        else {
+            fprintf(extendedSourceFile, "%s\n", lineString);
         }
     }
+
+cleanup:
     if(isErrorsFlag == TRUE) {
-        return FAIL;
+        success = FAIL;
     }
+    if(extendedSourceFile != NULL) {
+        fclose(extendedSourceFile);
+    }
+    if(initialSourceFile != NULL) {
+        fclose(initialSourceFile);
+    }
+    return success;
 }
 
 /**
@@ -234,4 +361,6 @@ void resetProgram() {
 void freeGlobal() {
     freeLabelList(labelTable);
     labelTable = NULL;
+    freemacroList(macroList);
+    macroList = NULL;
 }
