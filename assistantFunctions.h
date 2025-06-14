@@ -28,7 +28,7 @@ void storeString(char *string);
 int checkIfValidLabelName(char *labelName, int toPrint);
 int checkIfValidMacroName(char *macroName, int toPrint);
 int checkIfSavedWord(char *name);
-labelPtr checkLabelName(char *name);
+labelPtr findLabel(char *name);
 void addNumberToDataMemoryBase(int newNumber);
 int NumberOfLinesToSkip(int sourceAddressingMode, int destinationAddressingMode);
 void codeActionCommand(int destenationOperandAddressingMode, int sourceOperandAddressingMode, int commandType);

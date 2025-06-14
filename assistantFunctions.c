@@ -350,7 +350,7 @@ int isNumber(char *toCheck) {
 
 
 /**
- * checkLabelName
+ * findLabel
  *
  * The function gets a labels name and checks if there is an label with that name
  * If there is a label with that name the function will return that label
@@ -363,7 +363,7 @@ int isNumber(char *toCheck) {
  * labelPtr - a pointer to the found label or NULL if not found
  *
  * */
-labelPtr checkLabelName(char *name){
+labelPtr findLabel(char *name){
     labelPtr temp = labelTable;
     for (; temp != NULL; temp = temp->next){
         if(!strcmp(temp->name, name)){

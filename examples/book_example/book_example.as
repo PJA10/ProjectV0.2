@@ -1,4 +1,4 @@
-; file ps.as  
+; file book_example.as  
  
 .entry LOOP 
 .entry LENGTH 

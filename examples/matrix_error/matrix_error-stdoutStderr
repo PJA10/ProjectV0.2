@@ -1,0 +1,46 @@
+ERROR: the command mov doesnt accept unknown addressing mode for the source operand
+in line number: 14
+       mov M1[r32][r3],r3 
+
+ERROR: the command mov doesnt accept unknown addressing mode for the source operand
+in line number: 17
+       mov M1[6][r3],r3 
+
+ERROR: the command mov doesnt accept unknown addressing mode for the source operand
+in line number: 20
+        mov M1[r1][r3][r3],r3 
+
+ERROR: the command mov doesnt accept unknown addressing mode for the source operand
+in line number: 23
+        mov r2[r3][r3],r3 
+
+ERROR: missing comma
+in line number: 26
+        mov M1 [r3][r3],r3
+
+ERROR: the command mov doesnt accept unknown addressing mode for the source operand
+in line number: 29
+        mov M1[r3][r3,r3  
+
+ERROR: expected after .mat a matrix size
+in line number: 32
+        .mat 
+
+ERROR: expected after .mat a matrix size ([%d][%d])
+in line number: 35
+         .mat [2]
+
+ERROR: array parameters must be numbers
+in line number: 38
+        .mat [2][2]  "a", 2, 3, 4
+
+ERROR: array parameters must be numbers
+in line number: 41
+        .mat [2][2]  a, 2, 3, 4
+
+ERROR: expected after .mat a matrix size ([%d][%d])
+in line number: 56
+        .mat [-2][2] 
+
+file: examples/matrix_error/matrix_error filed
+

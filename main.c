@@ -4,7 +4,7 @@
  *
  * this is the main file of this project.
  * it has all the global variables.
- * it calls each stage (like firstPass and secondPass) in its turn.
+ * it calls each stage (like preAssembler, firstPass and secondPass) in its turn.
  * it prepares the files and free them at the end.
  *
  * */

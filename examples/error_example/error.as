@@ -1,16 +1,5 @@
 ; This file is intended to check the bad-path of the assembler.
 
-; Each line (except a few) contains an error in the assembly language code.
-; A comment preceding each line explains the error.
-
-; All errors should be detectable in the first pass of the assembler.
-
-; Run the assembler on this file, and verify that it catches all the errors.
-; Your assembler messages need not be identical to the comments in this file.
-
-; Disclaimer: this list of errors is not exhaustive; 
-;             you are encouraged to identify additional errors.
-
 ; 1. this line is ok (DATA4 is declared later)
 Start:  dec DATA4
 

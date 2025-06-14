@@ -1,8 +1,3 @@
-/*
- * Created by PJA on 3/4/2018.
- * Needs to be renamed
-*/
-
 
 #ifndef CODE_MAIN_H
 #define CODE_MAIN_H
