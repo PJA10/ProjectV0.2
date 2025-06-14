@@ -74,23 +74,23 @@ ERROR: extraneous comma at end of line
 in line number: 87
         .data   4,
 
-ERROR: .data parameters must be numbers
+ERROR: array parameters must be numbers
 in line number: 90
         .data   #123
 
-ERROR: .data parameters must be numbers
+ERROR: array parameters must be numbers
 in line number: 93
         .data   12.4
 
-ERROR: .data parameters must be numbers
+ERROR: array parameters must be numbers
 in line number: 96
         .data   --5
 
-ERROR: Label cant have the name of a command
+ERROR: Label name can't be a command or register name
 in line number: 102
 mov:    .data   5
 
-ERROR: Label cant have the name of a register
+ERROR: Label name can't be a command or register name
 in line number: 105
 r1:     .data   200,300
 
@@ -101,10 +101,6 @@ DATA1:  .data   300
 ERROR: Label must start with an alpha character
 in line number: 111
 1DATA:  .data   300
-
-ERROR: can't define two labels with the same name
-in line number: 120
-        .extern DATA4
 
 ERROR: can't define two labels with the same name
 in line number: 123
@@ -134,7 +130,7 @@ ERROR: Label must be less then 31 characters
 in line number: 153
 SuperCalifragilisticExpiAlidocious: .data	4	
 
-ERROR: .data must get at lest one number
+ERROR: array must get at lest one number
 in line number: 156
         .data
 
@@ -150,5 +146,5 @@ ERROR: expected end of line after rts
 in line number: 168
         rts Next
 
-file: example/error filed
+file: examples/error_example/error filed
 

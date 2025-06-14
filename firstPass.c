@@ -402,9 +402,9 @@ int handleExternCommand(tokenPtr head, int hasLabel ) {
         fprintf(stderr, "ERROR: expected end of line after %s\n", curr->string);
         return FAIL;
     }
-    existsLabel = checkLabelName(curr->string);
-    if(existsLabel!= NULL && existsLabel->type == EXTERN) { /*if the label had all ready been extern*/
-        return SUCCESS; /*it is ok to declare the same external more than once*/
+    existsLabel = findLabel(curr->string);
+    if(existsLabel!= NULL && existsLabel->type == EXTERN_LABEL) { /*if the label had all ready been extern*/
+        return SUCCESS; /*it is ok to declare the same external more than once. don't need t handle the label again*/
     }
 
 	if(handleLabel(curr->string, 0, EXTERN_LABEL) == FAIL) {
@@ -496,7 +496,7 @@ int handleEntryCommand(commandLinePtr entryCommandLine) {
         fprintf(stderr, "ERROR: expected end of line after first parameter of .entry\n");
         return FAIL;
     }
-    label = checkLabelName(currToken->string); /*find a label with this name*/
+    label = findLabel(currToken->string); /*find a label with this name*/
     if(label != NULL ) { /*if there is a label with this name*/
         if(label->type == EXTERN_LABEL) { /*if the label is an extern label*/
             fprintf(stderr, "ERROR: .entry label cant be an extern label\n");

@@ -251,7 +251,7 @@ int handleMatrixAddressing(tokenPtr operand, externReferencePtr *externReference
  * */
 int handleDirectAddressing(char *operand_str, externReferencePtr *externReferencesHead) {
     /*check if there is a label with the name of the operand string*/
-    labelPtr operandLabel = checkLabelName(operand_str);
+    labelPtr operandLabel = findLabel(operand_str);
 
     if(operandLabel == NULL) { /*if there isn't a label with the name of the operand string*/
         fprintf(stderr, "ERROR: no label with the name %s are defined\n", operand_str);
@@ -317,7 +317,7 @@ int handleSecondPassEntryCommand(commandLinePtr entryCommandLine) {
     }
     currToken = commandToken;
     currToken = currToken->next;
-    label = checkLabelName(currToken->string);
+    label = findLabel(currToken->string);
     if(label == NULL) { /*if there is no label with the given name*/
         fprintf(stderr, "ERROR: .entry parameter must be a existing label\n");
         return FAIL;
